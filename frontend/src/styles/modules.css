@@ -1,0 +1,252 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap');
+
+/* =========================================
+BASE
+========================================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Noto Sans Devanagari", sans-serif;
+  background: #f4f7ff;
+  color: #111827;
+}
+
+/* =========================================
+PAGE
+========================================= */
+
+.mod-page {
+  padding: 28px;
+}
+
+.mod-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.mod-page__title {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #1e3a8a;
+}
+
+.mod-page__subtitle {
+  margin-top: 6px;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.mod-page__summary {
+  display: flex;
+  gap: 10px;
+}
+
+.mod-page__summary span {
+  background: #e0e7ff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* =========================================
+MODULE CARD
+========================================= */
+
+.mod-card {
+  background: white;
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 22px;
+  border: 1px solid #e2e8f0;
+
+  box-shadow: 0 6px 20px rgba(0,0,0,0.04);
+
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mod-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+}
+
+/* =========================================
+MODULE HEADER
+========================================= */
+
+.mod-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.mod-card__top h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.mod-card__description {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* open module button */
+
+.mod-action {
+  background: #2563eb;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.mod-action:hover {
+  background: #1e40af;
+}
+
+/* =========================================
+TOPIC SECTION
+========================================= */
+
+.mod-section {
+  margin-top: 10px;
+}
+
+.mod-section__head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 10px;
+}
+
+/* =========================================
+TOPIC BOX
+========================================= */
+
+.mod-topic-box {
+  background: #f9fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+
+  padding: 12px 14px;
+  margin-bottom: 10px;
+
+  transition: background 0.15s ease;
+}
+
+.mod-topic-box:hover {
+  background: #f1f5ff;
+}
+
+.mod-topic-box__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.mod-topic-box__top strong {
+  font-size: 0.9rem;
+}
+
+/* topic link */
+
+.mod-topic-link {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  border: 1px solid #2563eb;
+  padding: 4px 10px;
+  border-radius: 6px;
+
+  color: #2563eb;
+}
+
+.mod-topic-link:hover {
+  background: #2563eb;
+  color: white;
+}
+
+/* =========================================
+CHIPS
+========================================= */
+
+.mod-chip-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.mod-chip {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.mod-chip--beginner {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.mod-chip--intermediate {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.mod-chip--expert {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* =========================================
+RESPONSIVE
+========================================= */
+
+@media (max-width: 768px) {
+
+  .mod-card__top {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .mod-page__header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+}
+
+.module-page{
+  padding:30px;
+  }
+  
+  .module-title{
+  font-size:28px;
+  font-weight:700;
+  margin-bottom:20px;
+  }
+  
+  .module-description{
+  background:white;
+  padding:25px;
+  border-radius:10px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.05);
+  line-height:1.8;
+  font-size:16px;
+  }

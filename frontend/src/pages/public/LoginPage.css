@@ -1,0 +1,237 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap');
+
+/* ═══════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --navy:        #0f2158;
+  --blue-dark:   #1e3a8a;
+  --blue:        #2563eb;
+  --blue-mid:    #3b82f6;
+  --white:       #ffffff;
+  --gray-bg:     #f8fafc;
+  --gray-border: #d1d5db;
+  --gray-text:   #6b7280;
+  --text-dark:   #111827;
+  --error:       #dc2626;
+  --toggle-bg:   #e5e7eb;
+  --toggle-text: #374151;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: 'Noto Sans Devanagari', sans-serif;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  min-height: 100vh;
+  /* NO display:flex here — the wrapper handles centering */
+}
+
+/* ═══════════════════════════════════════
+   FULL-SCREEN WRAPPER
+═══════════════════════════════════════ */
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+}
+
+/* ═══════════════════════════════════════
+   CARD
+═══════════════════════════════════════ */
+.login-card {
+  background: var(--white);
+  width: 100%;
+  max-width: 420px;
+  border-radius: 20px;
+  padding: 48px 40px 44px;
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.04),
+    0 20px 60px rgba(15,33,88,0.16);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.login-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 4px 8px rgba(0,0,0,0.06),
+    0 28px 72px rgba(15,33,88,0.2);
+}
+
+/* ═══════════════════════════════════════
+   LANGUAGE TOGGLE
+═══════════════════════════════════════ */
+.lang-toggle {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.lang-btn {
+  padding: 6px 16px;
+  border: none;
+  border-radius: 6px;
+  background: var(--toggle-bg);
+  color: var(--toggle-text);
+  font-family: 'Noto Sans Devanagari', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.lang-btn.active,
+.lang-btn:hover {
+  background: var(--blue-mid);
+  color: var(--white);
+}
+
+/* ═══════════════════════════════════════
+   HEADING
+═══════════════════════════════════════ */
+.login-card h2 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--blue-dark);
+  text-align: center;
+  line-height: 1.25;
+  margin-bottom: 8px;
+}
+
+.login-tagline {
+  font-size: 0.9375rem;
+  color: var(--gray-text);
+  text-align: center;
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════
+   FORM
+═══════════════════════════════════════ */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.field-wrap {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 18px;
+}
+
+.login-form input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid var(--gray-border);
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: 'Noto Sans Devanagari', sans-serif;
+  background: var(--gray-bg);
+  color: var(--text-dark);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.login-form input::placeholder {
+  color: #9ca3af;
+  font-size: 0.9375rem;
+}
+
+.login-form input:focus {
+  border-color: var(--blue-mid);
+  background: var(--white);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+
+.login-form input.input-error {
+  border-color: var(--error);
+}
+
+.login-form input.input-error:focus {
+  box-shadow: 0 0 0 3px rgba(220,38,38,0.12);
+}
+
+.error-msg {
+  font-size: 0.8125rem;
+  color: var(--error);
+  margin-top: 6px;
+  padding-left: 2px;
+}
+
+/* ═══════════════════════════════════════
+   SUBMIT BUTTON
+═══════════════════════════════════════ */
+.login-btn {
+  width: 100%;
+  padding: 15px;
+  margin-top: 6px;
+  border: none;
+  border-radius: 10px;
+  background: var(--blue);
+  color: var(--white);
+  font-family: 'Noto Sans Devanagari', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.2px;
+  box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.login-btn:hover {
+  background: var(--blue-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37,99,235,0.45);
+}
+
+.login-btn:active {
+  transform: translateY(0);
+}
+
+/* ═══════════════════════════════════════
+   REGISTER LINK
+═══════════════════════════════════════ */
+.register-link {
+  font-size: 0.875rem;
+  color: var(--gray-text);
+  text-align: center;
+  margin-top: 20px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.register-link:hover {
+  color: var(--blue-mid);
+}
+
+.register-link strong {
+  color: var(--blue-mid);
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════ */
+@media (max-width: 480px) {
+  .login-card {
+    padding: 40px 28px 36px;
+    border-radius: 16px;
+  }
+
+  .login-card h2 {
+    font-size: 1.625rem;
+  }
+}

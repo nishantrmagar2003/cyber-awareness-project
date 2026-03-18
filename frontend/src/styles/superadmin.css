@@ -1,0 +1,37 @@
+
+.sa-root {
+  min-height: 100vh;
+  background: var(--off-white, #f4f7ff);
+}
+
+.sa-shell {
+  display: flex;
+  min-height: 100vh;
+  overflow: hidden;
+  background: var(--off-white, #f4f7ff);
+}
+
+.sa-content-area {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sa-main {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--off-white, #f4f7ff);
+  padding: 24px;
+}
+
+@media (max-width: 900px) {
+  .sa-shell {
+    flex-direction: column;
+  }
+
+  .sa-main {
+    padding: 16px;
+  }
+}

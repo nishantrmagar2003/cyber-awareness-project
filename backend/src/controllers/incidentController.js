@@ -272,9 +272,8 @@ const assignIncident = async (req, res) => {
 
     if (!assigned_to)
       return res.status(400).json({ error: "assigned_to is required" });
-
-    if (user.role !== "admin" && user.role !== "superadmin")
-      return res.status(403).json({ error: "Only admin can assign incidents" });
+    if (user.role !== "org_admin" && user.role !== "superadmin")
+      return res.status(403).json({ error: "Only org admin can assign incidents" });
 
     const [rows] = await pool.query(
       "SELECT organization_id FROM incidents WHERE id = ? AND is_deleted = FALSE",

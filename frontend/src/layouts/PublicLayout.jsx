@@ -1,3 +1,4 @@
+import React from "react"; // ✅ ADD THIS
 import { Outlet } from "react-router-dom";
 
 export default function PublicLayout() {
@@ -7,4 +8,3 @@ export default function PublicLayout() {
     </div>
   );
 }
-

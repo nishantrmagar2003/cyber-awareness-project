@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 const T = {
   en: {
@@ -267,12 +267,14 @@ function ScenarioCard({ scenario, t, lang, onChoice }) {
   );
 }
 
-export default function CyberbullyingResponse() {
+export default function CyberbullyingResponse({ attemptId, onComplete }) {
   const [lang, setLang]         = useState("en");
   const [phase, setPhase]       = useState("intro");
   const [idx, setIdx]           = useState(0);
   const [scores, setScores]     = useState([]);
   const [finished, setFinished] = useState(false);
+  const [done, setDone]         = useState(false);
+  const startTime               = useRef(Date.now());
   const t = T[lang];
 
   function start() { setIdx(0); setScores([]); setFinished(false); setPhase("game"); }
@@ -282,7 +284,18 @@ export default function CyberbullyingResponse() {
     if (idx+1>=t.scenarios.length) setTimeout(()=>setPhase("results"),200);
     else setIdx(i=>i+1);
   }
-  function reset(nl) { setPhase("intro"); setIdx(0); setScores([]); setFinished(false); if(nl) setLang(nl); }
+  function handleFinish() {
+    if (done) return;
+    setDone(true);
+    const correctCount = scores.filter(Boolean).length;
+    const timeTaken = Math.round((Date.now() - startTime.current) / 1000);
+    if (onComplete) onComplete({
+      answers: { correctCount, total: scores.length, scores },
+      score: Math.round((scores.filter(Boolean).length / Math.max(scores.length,1)) * 100),
+      timeTaken,
+    });
+  }
+  function reset(nl) { setPhase("intro"); setIdx(0); setScores([]); setFinished(false); setDone(false); startTime.current = Date.now(); if(nl) setLang(nl); }
 
   const bestCount = scores.filter(Boolean).length;
   const pct = scores.length>0?bestCount/t.scenarios.length:0;
@@ -353,7 +366,7 @@ export default function CyberbullyingResponse() {
             </div>
             <div className="cb1-btn-group">
               <button className="cb1-btn cb1-btn-outline" onClick={start}>{t.retryBtn}</button>
-              <button className="cb1-btn cb1-btn-primary" onClick={()=>setFinished(true)}>{t.finishBtn}</button>
+              <button className="cb1-btn cb1-btn-primary" onClick={handleFinish}>{t.finishBtn}</button>
             </div>
             {finished && <FinishScreen t={t} onRetry={()=>reset()}/>}
           </div>

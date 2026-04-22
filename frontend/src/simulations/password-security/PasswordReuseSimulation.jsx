@@ -283,12 +283,14 @@ function LessonBox({ lesson, isBreach }) {
 }
 
 /* ── Main Component ───────────────────────────────── */
-export default function PasswordReuseSimulation() {
-  const [lang, setLang]           = useState("en");
-  const [step, setStep]           = useState(1); // 1 = social, 2 = bank, 3 = result
+export default function PasswordReuseSimulation({ attemptId, onComplete }) {
+  const [lang, setLang]             = useState("en");
+  const [step, setStep]             = useState(1); // 1 = social, 2 = bank, 3 = result
   const [socialUser, setSocialUser] = useState("");
   const [socialPass, setSocialPass] = useState("");
-  const [outcome, setOutcome]     = useState(null); // "breach" | "safe"
+  const [outcome, setOutcome]       = useState(null); // "breach" | "safe"
+  const [done, setDone]             = useState(false);
+  const startTime                   = useRef(Date.now());
   const t = T[lang];
 
   function handleStep1(user, pass) {
@@ -307,6 +309,23 @@ export default function PasswordReuseSimulation() {
     setSocialUser("");
     setSocialPass("");
     setOutcome(null);
+    setDone(false);
+    startTime.current = Date.now();
+  }
+
+  function handleFinish() {
+    setDone(true);
+    const timeTaken = Math.round((Date.now() - startTime.current) / 1000);
+    if (onComplete) {
+      onComplete({
+        answers: {
+          outcome,
+          usedSamePassword: outcome === "breach",
+        },
+        score:     outcome === "safe" ? 100 : 0,
+        timeTaken,
+      });
+    }
   }
 
   const isBreach = outcome === "breach";
@@ -390,6 +409,29 @@ export default function PasswordReuseSimulation() {
                 {isBreach ? t.breachBtn : t.safeBtn}
               </button>
             </div>
+
+            {/* Finish / mark complete */}
+            {!done ? (
+              <button
+                onClick={handleFinish}
+                style={{
+                  marginTop: 14, width: "100%", padding: "13px",
+                  background: "#22c55e", color: "#fff", border: "none",
+                  borderRadius: 10, fontFamily: "inherit",
+                  fontSize: 14, fontWeight: 800, cursor: "pointer",
+                }}
+              >
+                {lang === "np" ? "✅ सिमुलेसन सम्पन्न गर्नुहोस्" : "✅ Finish Simulation"}
+              </button>
+            ) : (
+              <div style={{
+                marginTop: 14, textAlign: "center", padding: "12px",
+                background: "#f0fdf4", border: "1.5px solid #86efac",
+                borderRadius: 10, color: "#166534", fontWeight: 700, fontSize: 14,
+              }}>
+                {lang === "np" ? "🎉 सम्पन्न! प्रगति सुरक्षित गरिँदैछ…" : "🎉 Done! Saving your progress…"}
+              </div>
+            )}
           </div>
         )}
       </div>

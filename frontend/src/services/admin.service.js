@@ -1,4 +1,6 @@
+import axios from "axios";
 
-import api from "./api";
+const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+const apiRoot = rawBaseUrl.replace(/\/api\/?$/, "");
 
-export const getHealth = () => api.get("/../health");
+export const getHealth = () => axios.get(`${apiRoot}/health`);

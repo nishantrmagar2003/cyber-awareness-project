@@ -1,45 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import StatsCard from "../../components/ui/StatsCard";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
 
 import { getModules } from "../../services/module.service";
-import { getTopicProgress } from "../../services/topic.service";
 import { getQuizStats } from "../../services/quiz.service";
 import { getSimulationStats } from "../../services/simulation.service";
 import { getStudentBadges } from "../../services/reward.service";
+import { getProgress, getTopicProgress } from "../../services/progress.service";
+import { getStudentCertificates } from "../../services/certificate.service";
 
 import "./Dashboard.css";
-
-/* ---------------- MOCK FALLBACK DATA ---------------- */
-
-const MOCK_MODULES = [
-  { id: 1, title: "Personal Cyber Protection", progress: 60, color: "#22c55e" },
-  { id: 2, title: "Online Threat Awareness", progress: 40, color: "#3b82f6" },
-  { id: 3, title: "Device & Network Safety", progress: 30, color: "#6366f1" },
-  { id: 4, title: "Digital Payments & Scams", progress: 20, color: "#f59e0b" }
-];
-
-const MOCK_STATS = {
-  modulesAvailable: 4,
-  topicsCompleted: 14,
-  quizAvgScore: 65,
-  simulationsCompleted: 3,
-  badgesEarned: 2
-};
-
-const MOCK_BADGES = [
-  { id: 1, icon: "🛡️", name: "First Shield", desc: "Completed first module" },
-  { id: 2, icon: "🔒", name: "Lock Expert", desc: "Scored 80%+ on Password quiz" },
-  { id: 3, icon: "🎯", name: "Phishing Hunter", desc: "Passed phishing simulations" }
-];
-
-const MOCK_NEXT_TOPIC = {
-  module: "Online Threat Awareness",
-  topic: "Fake SMS Detection"
-};
-
-const MOCK_WEAK_AREA = "Phishing Awareness";
 
 /* ---------------- CIRCLE PROGRESS ---------------- */
 
@@ -49,14 +21,14 @@ function CircleProgress({ value = 0, color = "#3b82f6", size = 100 }) {
       className="sd-circle-wrap"
       style={{
         "--value": `${value}%`,
-        "--color": color
+        "--color": color,
       }}
     >
       <div
         className="sd-circle"
         style={{
           width: `${size}px`,
-          height: `${size}px`
+          height: `${size}px`,
         }}
       >
         <span>{value}%</span>
@@ -68,112 +40,197 @@ function CircleProgress({ value = 0, color = "#3b82f6", size = 100 }) {
 /* ---------------- MAIN DASHBOARD ---------------- */
 
 export default function StudentDashboard() {
+  const navigate = useNavigate();
 
-  const [modules, setModules] = useState(MOCK_MODULES);
-  const [stats, setStats] = useState(MOCK_STATS);
-  const [badges, setBadges] = useState(MOCK_BADGES);
-  const [nextTopic, setNextTopic] = useState(MOCK_NEXT_TOPIC);
-  const [weakArea, setWeakArea] = useState(MOCK_WEAK_AREA);
+  const [modules, setModules] = useState([]);
+  const [badges, setBadges] = useState([]);
+  const [certificates, setCertificates] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const studentName = (() => {
+  const [stats, setStats] = useState({
+    modulesAvailable: 0,
+    generalModules: 0,
+    premiumModules: 0,
+    premiumModulesCompleted: 0,
+    premiumCertificates: 0,
+    quizAvgScore: 0,
+    simulationsCompleted: 0,
+    badgesEarned: 0,
+  });
+
+  const [progress, setProgress] = useState({
+    total: 0,
+    completed: 0,
+  });
+
+  const user = useMemo(() => {
     try {
-      const u = JSON.parse(localStorage.getItem("user") || "{}");
-      return u.full_name || u.name || u.username || "Student";
+      return JSON.parse(localStorage.getItem("user") || "{}");
     } catch {
-      return "Student";
+      return {};
     }
-  })();
+  }, []);
 
-  const totalTopics = Math.max(modules.length * 8, 1);
+  const studentName =
+    user.full_name || user.name || user.username || "Student";
 
-  const overallPct = Math.min(
-    100,
-    Math.round((stats.topicsCompleted / totalTopics) * 100)
-  );
+  const isOrgStudent = user.role === "org_student";
+
+  const overallPct =
+    Number(progress.total || 0) === 0
+      ? 0
+      : Math.round(
+          (Number(progress.completed || 0) / Number(progress.total || 0)) * 100
+        );
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadData() {
       try {
-        const [
-          modulesRes,
-          topicsRes,
-          quizRes,
-          simRes,
-          badgeRes
-        ] = await Promise.allSettled([
-          getModules(),
-          getTopicProgress(),
-          getQuizStats(),
-          getSimulationStats(),
-          getStudentBadges()
-        ]);
+        setLoading(true);
+
+        const [modulesRes, quizRes, simRes, badgeRes, progressRes, certRes] =
+          await Promise.allSettled([
+            getModules(),
+            getQuizStats(),
+            getSimulationStats(),
+            getStudentBadges(),
+            getProgress(),
+            getStudentCertificates(),
+          ]);
 
         if (cancelled) return;
 
-        const COLORS = ["#22c55e", "#3b82f6", "#6366f1", "#f59e0b", "#8b5cf6", "#06b6d4"];
+        const COLORS = ["#22c55e", "#3b82f6", "#6366f1", "#8b5cf6", "#f59e0b"];
 
-        let apiModulesLength = MOCK_STATS.modulesAvailable;
-
+        let apiModules = [];
         if (modulesRes.status === "fulfilled") {
-          const apiModules = modulesRes.value?.data;
+          apiModules = Array.isArray(modulesRes.value) ? modulesRes.value : [];
+        }
 
-          if (Array.isArray(apiModules) && apiModules.length) {
-            apiModulesLength = apiModules.length;
+        if (progressRes.status === "fulfilled") {
+          const data = progressRes.value || {};
+          setProgress({
+            total: Number(data.total || 0),
+            completed: Number(data.completed || 0),
+          });
+        } else {
+          setProgress({
+            total: 0,
+            completed: 0,
+          });
+        }
 
-            setModules(
-              apiModules.map((m, i) => ({
-                id: m.id,
-                title: m.title || `Module ${i + 1}`,
-                progress: Number(m.progress || 0),
-                color: COLORS[i % COLORS.length]
-              }))
+        let certificateList = [];
+        if (certRes.status === "fulfilled") {
+          certificateList = Array.isArray(certRes.value) ? certRes.value : [];
+        }
+        setCertificates(certificateList);
+
+        const moduleProgressResults = await Promise.all(
+          apiModules.map(async (moduleItem, index) => {
+            const moduleTopics = Array.isArray(moduleItem.topics)
+              ? moduleItem.topics
+              : [];
+
+            const isPremium =
+              Number(moduleItem.is_public || 0) === 0 &&
+              moduleItem.audience_type === "organization";
+
+            if (moduleTopics.length === 0) {
+              return {
+                id: moduleItem.id,
+                title: moduleItem.title || `Module ${index + 1}`,
+                description: moduleItem.description || "",
+                is_public: Number(moduleItem.is_public || 0),
+                audience_type: moduleItem.audience_type || "general",
+                isPremium,
+                color: COLORS[index % COLORS.length],
+                progress: 0,
+              };
+            }
+
+            const topicProgressList = await Promise.all(
+              moduleTopics.map(async (topic) => {
+                try {
+                  return await getTopicProgress(topic.id);
+                } catch {
+                  return null;
+                }
+              })
             );
-          }
+
+            const completedTopics = topicProgressList.filter(
+              (tp) => Number(tp?.completed || 0) === 1
+            ).length;
+
+            const modulePct = Math.round(
+              (completedTopics / moduleTopics.length) * 100
+            );
+
+            return {
+              id: moduleItem.id,
+              title: moduleItem.title || `Module ${index + 1}`,
+              description: moduleItem.description || "",
+              is_public: Number(moduleItem.is_public || 0),
+              audience_type: moduleItem.audience_type || "general",
+              isPremium,
+              color: COLORS[index % COLORS.length],
+              progress: Number.isFinite(modulePct) ? modulePct : 0,
+            };
+          })
+        );
+
+        if (!cancelled) {
+          setModules(moduleProgressResults);
         }
 
-        const newStats = { ...MOCK_STATS, modulesAvailable: apiModulesLength };
+        const generalCount = moduleProgressResults.filter((m) => !m.isPremium).length;
+        const premiumCount = moduleProgressResults.filter((m) => m.isPremium).length;
 
-        if (topicsRes.status === "fulfilled") {
-          const data = topicsRes.value?.data || {};
-          newStats.topicsCompleted = data.completed ?? MOCK_STATS.topicsCompleted;
+        const premiumCompletedCount = moduleProgressResults.filter(
+          (m) => m.isPremium && Number(m.progress || 0) >= 100
+        ).length;
 
-          if (data.nextTopic) {
-            setNextTopic({
-              module: data.nextTopic.moduleName || "Module",
-              topic: data.nextTopic.title || "Topic"
-            });
-          }
-        }
+        const premiumCertificateCount = certificateList.filter(
+          (c) => c.certificate_type === "module"
+        ).length;
+
+        const newStats = {
+          modulesAvailable: moduleProgressResults.length,
+          generalModules: generalCount,
+          premiumModules: premiumCount,
+          premiumModulesCompleted: premiumCompletedCount,
+          premiumCertificates: premiumCertificateCount,
+          quizAvgScore: 0,
+          simulationsCompleted: 0,
+          badgesEarned: 0,
+        };
 
         if (quizRes.status === "fulfilled") {
-          const data = quizRes.value?.data || {};
-          newStats.quizAvgScore = data.averageScore ?? MOCK_STATS.quizAvgScore;
-
-          if (data.weakArea) {
-            setWeakArea(data.weakArea);
-          }
+          const data = quizRes.value || {};
+          newStats.quizAvgScore = Number(data.averageScore || 0);
         }
 
         if (simRes.status === "fulfilled") {
-          const data = simRes.value?.data || {};
-          newStats.simulationsCompleted =
-            data.completed ?? MOCK_STATS.simulationsCompleted;
+          const data = simRes.value || {};
+          newStats.simulationsCompleted = Number(data.completed || 0);
         }
 
         if (badgeRes.status === "fulfilled") {
-          const data = badgeRes.value?.data;
-          if (Array.isArray(data)) {
-            setBadges(data.slice(0, 3));
-            newStats.badgesEarned = data.length;
-          }
+          const data = Array.isArray(badgeRes.value) ? badgeRes.value : [];
+          setBadges(data.slice(0, 3));
+          newStats.badgesEarned = data.length;
+        } else {
+          setBadges([]);
         }
 
-        setStats(newStats);
+        if (!cancelled) {
+          setStats(newStats);
+        }
       } catch (err) {
-        console.error("Dashboard API error:", err);
+        console.error("Dashboard error:", err);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -186,9 +243,81 @@ export default function StudentDashboard() {
     };
   }, []);
 
+  const progressStatus =
+    progress.completed === 0
+      ? "Not Started"
+      : overallPct >= 100
+      ? "Completed"
+      : "In Progress";
+
+  const generalModules = modules.filter((m) => !m.isPremium);
+  const premiumModules = modules.filter((m) => m.isPremium);
+
+  function renderModuleSection(title, subtitle, list) {
+    if (list.length === 0) return null;
+
+    return (
+      <section className="sd-card sd-modules-card">
+        <div className="sd-section-head">
+          <h3 className="sd-section-heading">{title}</h3>
+          <p className="sd-section-subtitle">{subtitle}</p>
+        </div>
+
+        <div className="sd-module-circles">
+          {list.map((m) => {
+            const moduleId = m.id;
+            const displayIndex = modules.findIndex((x) => x.id === m.id) + 1;
+
+            const hasCertificate =
+              m.isPremium &&
+              certificates.some(
+                (c) =>
+                  c.certificate_type === "module" &&
+                  Number(c.reference_id) === Number(moduleId)
+              );
+
+            return (
+              <div key={moduleId} className="sd-module-item">
+                <CircleProgress value={m.progress || 0} color={m.color} />
+
+                <h4 className="sd-module-title">Module {displayIndex}</h4>
+
+                <small className="sd-module-subtitle">{m.title}</small>
+
+                {m.isPremium && (
+                  <div className="sd-module-cert-wrap">
+                    <span
+                      className={`sd-module-cert ${
+                        hasCertificate
+                          ? "sd-module-cert--earned"
+                          : "sd-module-cert--pending"
+                      }`}
+                    >
+                      {hasCertificate
+                        ? "Certificate Earned"
+                        : "Certificate Pending"}
+                    </span>
+                  </div>
+                )}
+
+                <div className="sd-module-btn-wrap">
+                  <button
+                    onClick={() => navigate(`/student/module/${moduleId}`)}
+                    className="sd-module-btn"
+                  >
+                    Open Module
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    );
+  }
+
   return (
     <div className="sd-root">
-
       <PageHeader
         title="Your Cybersecurity Progress"
         subtitle={`Welcome back, ${studentName}. Stay safe. Stay informed.`}
@@ -196,9 +325,7 @@ export default function StudentDashboard() {
 
       <section className="sd-hero">
         <div className="sd-hero-grid">
-
           <div className="sd-hero-left">
-
             <p className="sd-hero-label">Overall Progress</p>
 
             <div className="sd-hero-score">
@@ -206,128 +333,94 @@ export default function StudentDashboard() {
             </div>
 
             <div className="sd-status-wrap">
-              <StatusBadge
-                status={
-                  overallPct >= 80
-                    ? "Completed"
-                    : overallPct >= 40
-                    ? "In Progress"
-                    : "Not Started"
-                }
-              />
+              <StatusBadge status={progressStatus} />
             </div>
-
-            <p className="sd-hero-desc">
-              Track your cybersecurity learning journey across modules,
-              quizzes, simulations, and rewards.
-            </p>
-
-            <div className="sd-overall-track">
-              <div
-                className="sd-overall-fill"
-                style={{ width: `${overallPct}%` }}
-              />
-            </div>
-
           </div>
 
           <div className="sd-hero-right">
-
             <div className="sd-chapters-box">
-
-              <strong className="sd-chapters-title">
-                Completed Chapters
-              </strong>
-
-              <p className="sd-chapters-value">
-                {stats.topicsCompleted} <span>/ {totalTopics}</span>
+              <strong>Completed Chapters</strong>
+              <p>
+                {progress.completed} / {progress.total}
               </p>
-
-              <div className="sd-chapters-track">
-                <div
-                  className="sd-chapters-fill"
-                  style={{ width: `${overallPct}%` }}
-                />
-              </div>
-
-              <div className="sd-notice">
-                ⚠ Weak Area: {weakArea}
-                <br />
-                ✅ Next: {nextTopic.topic}
-              </div>
-
             </div>
-
           </div>
-
         </div>
       </section>
 
       <section className="sd-stats-section">
         <div className="sd-stats-grid">
-          <StatsCard title="Modules" value={stats.modulesAvailable} icon="📦" color="blue" />
-          <StatsCard title="Topics Completed" value={stats.topicsCompleted} icon="✅" color="green" />
-          <StatsCard title="Quiz Average" value={`${stats.quizAvgScore}%`} icon="📝" color="amber" />
-          <StatsCard title="Simulations" value={stats.simulationsCompleted} icon="🎯" color="indigo" />
-          <StatsCard title="Badges" value={stats.badgesEarned} icon="🏅" color="blue" />
+          <StatsCard
+            title="Accessible Modules"
+            value={stats.modulesAvailable}
+            icon="📦"
+            color="blue"
+          />
+
+          <StatsCard
+            title="Quiz Average"
+            value={`${stats.quizAvgScore}%`}
+            icon="📝"
+            color="amber"
+          />
+
+          <StatsCard
+            title="Simulations"
+            value={stats.simulationsCompleted}
+            icon="🎯"
+            color="indigo"
+          />
+
+          <StatsCard
+            title="Badges"
+            value={stats.badgesEarned}
+            icon="🏅"
+            color="blue"
+          />
         </div>
       </section>
 
-      <section className="sd-card sd-modules-card">
+      {isOrgStudent && (
+        <section className="sd-stats-section sd-stats-section--secondary">
+          <div className="sd-stats-grid">
+            <StatsCard
+              title="Premium Modules"
+              value={stats.premiumModules}
+              icon="🏢"
+              color="blue"
+            />
 
-        <h3 className="sd-section-heading">Learning Modules</h3>
+            <StatsCard
+              title="Completed Premium"
+              value={stats.premiumModulesCompleted}
+              icon="✅"
+              color="amber"
+            />
 
-        <div className="sd-module-circles">
+            <StatsCard
+              title="Premium Certificates"
+              value={stats.premiumCertificates}
+              icon="📜"
+              color="indigo"
+            />
+          </div>
+        </section>
+      )}
 
-          {modules.map((m, index) => (
-            <div key={m.id || index} className="sd-module-item">
+      {renderModuleSection(
+        "General Learning Modules",
+        "Available to all students.",
+        generalModules
+      )}
 
-              <CircleProgress value={m.progress} color={m.color} />
+      {isOrgStudent &&
+        renderModuleSection(
+          "Premium Organization Modules",
+          "Assigned premium training modules for your organization.",
+          premiumModules
+        )}
 
-              <h4 className="sd-module-title">
-                Module {index + 1}
-              </h4>
-
-              <small className="sd-module-subtitle">
-                {m.title}
-              </small>
-
-            </div>
-          ))}
-
-        </div>
-
-      </section>
-
-      <section className="sd-card sd-badges-card">
-
-        <div className="sd-card-head">
-          <h3 className="sd-section-heading">Recent Badges</h3>
-        </div>
-
-        <div className="sd-badges">
-
-          {badges.map((b) => (
-            <div key={b.id} className="sd-badge">
-
-              <span className="sd-badge-icon">{b.icon}</span>
-
-              <div className="sd-badge-content">
-                <strong>{b.name}</strong>
-                <p>{b.desc}</p>
-              </div>
-
-            </div>
-          ))}
-
-        </div>
-
-      </section>
-
-      <footer className="sd-footer">
-        Built for national cyber awareness
-      </footer>
-
+      <footer className="sd-footer">Built for national cyber awareness</footer>
     </div>
   );
 }

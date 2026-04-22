@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const T = {
   en: {
@@ -290,17 +290,30 @@ function FinishScreen({ t, onRetry }) {
 }
 
 /* ── Main ─────────────────────────────────────────── */
-export default function QRPaymentTrick() {
+export default function QRPaymentTrick({ attemptId, onComplete }) {
   const [lang, setLang]         = useState("en");
   const [phase, setPhase]       = useState("intro");
   const [showDrain, setShowDrain] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [done, setDone]         = useState(false);
+  const startTime               = useRef(Date.now());
   const t = T[lang];
 
+  function handleFinish() {
+    if (done) return;
+    setDone(true);
+    const correctCount = scores.filter(Boolean).length;
+    const timeTaken = Math.round((Date.now() - startTime.current) / 1000);
+    if (onComplete) onComplete({
+      answers: { correctCount, total: scores.length, scores },
+      score: Math.round((scores.filter(Boolean).length / Math.max(scores.length,1)) * 100),
+      timeTaken,
+    });
+  }
   function reset(newLang) {
     setPhase("intro");
     setShowDrain(false);
-    setFinished(false);
+    setFinished(false); setDone(false); startTime.current = Date.now();
     if (newLang) setLang(newLang);
   }
 
@@ -405,7 +418,7 @@ export default function QRPaymentTrick() {
             <div className="qp-tip-box">{t.warnedTip}</div>
             <div className="qp-btn-group">
               <button className="qp-btn qp-btn-outline" onClick={handleTryAnyway}>{t.tryBtn}</button>
-              <button className="qp-btn qp-btn-primary" onClick={()=>setFinished(true)}>{t.finishBtn}</button>
+              <button className="qp-btn qp-btn-primary" onClick={() => handleFinish()}>{t.finishBtn}</button>
             </div>
             {finished && <FinishScreen t={t} onRetry={()=>reset()}/>}
           </div>
@@ -475,7 +488,7 @@ export default function QRPaymentTrick() {
             <LessonBox lesson={t.lessonBad} isBad={true}/>
             <div className="qp-btn-group">
               <button className="qp-btn qp-btn-outline" onClick={()=>reset()}>{t.retryBtn}</button>
-              <button className="qp-btn qp-btn-primary" onClick={()=>setFinished(true)}>{t.finishBtn}</button>
+              <button className="qp-btn qp-btn-primary" onClick={() => handleFinish()}>{t.finishBtn}</button>
             </div>
             {finished && <FinishScreen t={t} onRetry={()=>reset()}/>}
           </div>
@@ -495,7 +508,7 @@ export default function QRPaymentTrick() {
             <LessonBox lesson={t.lessonGood} isBad={false}/>
             <div className="qp-btn-group">
               <button className="qp-btn qp-btn-outline" onClick={()=>reset()}>{t.retryBtn}</button>
-              <button className="qp-btn qp-btn-primary" onClick={()=>setFinished(true)}>{t.finishBtn}</button>
+              <button className="qp-btn qp-btn-primary" onClick={() => handleFinish()}>{t.finishBtn}</button>
             </div>
             {finished && <FinishScreen t={t} onRetry={()=>reset()}/>}
           </div>

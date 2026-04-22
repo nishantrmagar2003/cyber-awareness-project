@@ -1,25 +1,44 @@
-
-import api, { ok } from "./api";
+import api from "./api";
 
 export async function getQuizStats() {
   try {
     const res = await api.get("/quizzes/stats");
-    const data = res?.data || {};
+
+    const payload = res?.data?.data || {};
+
     return {
-      ...res,
-      data: {
-        totalQuizzes: data.totalQuizzes ?? data.total_quizzes ?? 0,
-        totalAttempts: data.totalAttempts ?? data.total_attempts ?? 0,
-        averageScore: Math.round(data.averageScore ?? data.average_score ?? 0),
-        weakArea: data.weakArea ?? null,
-      },
+      averageScore: Number(payload?.averageScore || 0),
+      totalQuizzes: Number(payload?.totalQuizzes || 0),
+      totalAttempts: Number(payload?.totalAttempts || 0),
+      weakArea: payload?.weakArea || null,
     };
-  } catch {
-    return ok({ totalQuizzes: 0, totalAttempts: 0, averageScore: 0, weakArea: null });
+  } catch (error) {
+    console.error("Quiz stats error:", error);
+    return {
+      averageScore: 0,
+      totalQuizzes: 0,
+      totalAttempts: 0,
+      weakArea: null,
+    };
   }
 }
 
-export const getQuizByTopicId = (topicId) => api.get(`/quizzes/topic/${topicId}`);
-export const getQuizById = (quizId) => api.get(`/quizzes/${quizId}`);
-export const submitQuiz = (quizId, payload) =>
-  api.post(`/quizzes/${quizId}/submit`, payload);
+export async function getPreAssessmentByModuleId(moduleId) {
+  const res = await api.get(`/quizzes/module/${moduleId}/pre-assessment`);
+  return res?.data?.data || null;
+}
+
+export async function getQuizByTopicId(topicId) {
+  const res = await api.get(`/quizzes/topic/${topicId}`);
+  return res?.data?.data || null;
+}
+
+export async function getQuizById(quizId) {
+  const res = await api.get(`/quizzes/${quizId}`);
+  return res?.data?.data || null;
+}
+
+export async function submitQuiz(quizId, payload) {
+  const res = await api.post(`/quizzes/${quizId}/submit`, payload);
+  return res?.data?.data || null;
+}

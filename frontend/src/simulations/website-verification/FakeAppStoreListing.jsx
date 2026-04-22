@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 const T = {
   en: {
@@ -497,12 +497,14 @@ function FinishScreen({ t, onRetry }) {
   );
 }
 
-export default function FakeAppStoreListing() {
+export default function FakeAppStoreListing({ attemptId, onComplete }) {
   const [lang, setLang]         = useState("en");
   const [phase, setPhase]       = useState("intro");
   const [idx, setIdx]           = useState(0);
   const [scores, setScores]     = useState([]);
   const [finished, setFinished] = useState(false);
+  const [done, setDone]         = useState(false);
+  const startTime               = useRef(Date.now());
   const t = T[lang];
 
   function start() { setIdx(0); setScores([]); setFinished(false); setPhase("game"); }
@@ -512,8 +514,19 @@ export default function FakeAppStoreListing() {
     if (idx + 1 >= t.apps.length) setTimeout(() => setPhase("results"), 200);
     else setIdx(i => i + 1);
   }
+  function handleFinish() {
+    if (done) return;
+    setDone(true);
+    const correctCount = scores.filter(Boolean).length;
+    const timeTaken = Math.round((Date.now() - startTime.current) / 1000);
+    if (onComplete) onComplete({
+      answers: { correctCount, total: scores.length, scores },
+      score: Math.round((scores.filter(Boolean).length / Math.max(scores.length,1)) * 100),
+      timeTaken,
+    });
+  }
   function reset(newLang) {
-    setPhase("intro"); setIdx(0); setScores([]); setFinished(false);
+    setPhase("intro"); setIdx(0); setScores([]); setFinished(false); setDone(false); startTime.current = Date.now();
     if (newLang) setLang(newLang);
   }
 
@@ -616,7 +629,7 @@ export default function FakeAppStoreListing() {
             </div>
             <div className="fa-btn-group">
               <button className="fa-start-btn fa-outline-btn" onClick={start}>{t.retryBtn}</button>
-              <button className="fa-start-btn" onClick={()=>setFinished(true)}>{t.finishBtn}</button>
+              <button className="fa-start-btn" onClick={() => handleFinish()}>{t.finishBtn}</button>
             </div>
             {finished && <FinishScreen t={t} onRetry={()=>reset()}/>}
           </div>

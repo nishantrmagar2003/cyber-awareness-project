@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 /* ── Translations ─────────────────────────────────── */
 const T = {
@@ -346,10 +346,12 @@ function RiskMeter({ level, t }) {
 }
 
 /* ── Main component ───────────────────────────────── */
-export default function OversharingRiskAnalyzer() {
-  const [lang, setLang]       = useState("en");
+export default function OversharingRiskAnalyzer({ attemptId, onComplete }) {
+  const [lang, setLang]         = useState("en");
   const [selected, setSelected] = useState(new Set());
-  const [revealed, setRevealed] = useState(new Set()); // for staggered attack reveal
+  const [revealed, setRevealed] = useState(new Set());
+  const [done, setDone]         = useState(false);
+  const startTime               = useRef(Date.now());
   const t = T[lang];
 
   const riskLevel = calcRisk(selected, t.items);
@@ -511,9 +513,43 @@ export default function OversharingRiskAnalyzer() {
             ))}
           </div>
         )}
+        
+        {selectedItems.length > 0 && (
+        <div style={{ marginTop: "24px" }}>
+          <button
+            style={{
+              width: "100%",
+              padding: "14px",
+              fontWeight: "800",
+              background: "#3b82f6",
+              color: "#fff",
+              borderRadius: "10px",
+              border: "none",
+              cursor: "pointer"
+            }}
+            onClick={() => {
+              if (done) return;
+              setDone(true);
+              const timeTaken = Math.round((Date.now() - startTime.current) / 1000);
+              if (onComplete) onComplete({
+                answers: {
+                  selectedItems: [...selected],
+                  riskLevel,
+                  itemCount: selected.size,
+                },
+                score:     riskLevel === "Low" ? 100 : riskLevel === "Medium" ? 50 : 0,
+                timeTaken,
+              });
+            }}
+          >
+            Finish Simulation
+          </button>
+        </div>
+        )}
 
       </div>
     </div>
+    
   );
 }
 

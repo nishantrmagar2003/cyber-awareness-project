@@ -231,7 +231,7 @@ function PhoneOTP({ code, t }) {
 }
 
 /* ── Main Component ───────────────────────────────── */
-export default function TwoFASimulation() {
+export default function TwoFASimulation({ attemptId, onComplete }) {
   const [lang, setLang]     = useState("en");
   const [mode, setMode]     = useState(null);     // "without" | "with"
   const [phase, setPhase]   = useState("login");  // login | attacking | hacked | otp | blocked | success
@@ -242,7 +242,9 @@ export default function TwoFASimulation() {
   const [timer, setTimer]       = useState(30);
   const [shake, setShake]       = useState(false);
   const [inputError, setInputError] = useState("");
-  const timerRef = useRef(null);
+  const [done, setDone]         = useState(false);
+  const timerRef  = useRef(null);
+  const startTime = useRef(Date.now());
   const t = T[lang];
 
   // OTP countdown
@@ -290,6 +292,23 @@ export default function TwoFASimulation() {
     setMode(null); setPhase("login");
     setPassword(""); setOtpInput("");
     setOtpError(""); setInputError("");
+    setDone(false);
+    startTime.current = Date.now();
+  }
+
+  function handleFinish(outcomeMode) {
+    setDone(true);
+    const timeTaken = Math.round((Date.now() - startTime.current) / 1000);
+    if (onComplete) {
+      onComplete({
+        answers: {
+          mode: outcomeMode,
+          outcome: outcomeMode === "without" ? "hacked" : "protected",
+        },
+        score:     outcomeMode === "with" ? 100 : 0,
+        timeTaken,
+      });
+    }
   }
 
   const tw = mode === "without" ? t.without : t.with;
@@ -414,6 +433,19 @@ export default function TwoFASimulation() {
               {tw.tryWith2FA}
             </button>
             <button className="tfa-back" onClick={reset}>{t.resetBtn}</button>
+            {!done ? (
+              <button
+                className="tfa-action-btn btn-green"
+                style={{ marginTop: 10 }}
+                onClick={() => handleFinish("without")}
+              >
+                {lang === "np" ? "✅ सिमुलेसन सम्पन्न गर्नुहोस्" : "✅ Finish Simulation"}
+              </button>
+            ) : (
+              <div className="tfa-lesson-box lesson-success" style={{ marginTop: 10, textAlign: "center" }}>
+                {lang === "np" ? "🎉 प्रगति सुरक्षित गरिँदैछ…" : "🎉 Saving your progress…"}
+              </div>
+            )}
           </div>
         )}
 
@@ -483,6 +515,19 @@ export default function TwoFASimulation() {
               ))}
             </div>
             <button className="tfa-action-btn btn-green" onClick={reset}>{tw.tryAgain}</button>
+            {!done ? (
+              <button
+                className="tfa-action-btn btn-green"
+                style={{ marginTop: 10 }}
+                onClick={() => handleFinish("with")}
+              >
+                {lang === "np" ? "✅ सिमुलेसन सम्पन्न गर्नुहोस्" : "✅ Finish Simulation"}
+              </button>
+            ) : (
+              <div className="tfa-lesson-box lesson-success" style={{ marginTop: 10, textAlign: "center" }}>
+                {lang === "np" ? "🎉 प्रगति सुरक्षित गरिँदैछ…" : "🎉 Saving your progress…"}
+              </div>
+            )}
           </div>
         )}
 

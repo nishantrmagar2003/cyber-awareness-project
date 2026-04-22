@@ -1,8 +1,6 @@
 import { Outlet, useLocation } from "react-router-dom";
-
 import OrgAdminSidebar from "../components/common/OrgAdminSidebar";
 import TopNavbar from "../components/common/TopNavbar";
-
 import "../styles/org-layout.css";
 
 const PAGE_TITLES = {
@@ -12,19 +10,19 @@ const PAGE_TITLES = {
   "/organization/settings": "Settings",
 };
 
-export default function OrgLayout() {
+export default function OrganizationLayout() {
   const location = useLocation();
   const pageTitle = PAGE_TITLES[location.pathname] || "Organization Dashboard";
 
   return (
-    <div className="sa-root">
-      <div className="sa-shell">
+    <div className="org-root">
+      <div className="org-shell">
         <OrgAdminSidebar />
 
-        <div className="sa-content-area">
+        <div className="org-content-area">
           <TopNavbar pageTitle={pageTitle} role="Organization Admin" />
 
-          <main className="sa-main">
+          <main className="org-main">
             <Outlet />
           </main>
         </div>

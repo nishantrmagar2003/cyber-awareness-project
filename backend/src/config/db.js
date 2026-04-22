@@ -10,10 +10,9 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  connectTimeout: 5000
+  connectTimeout: 5000,
 });
 
-// TEST CONNECTION PROPERLY
 async function testConnection() {
   try {
     const connection = await pool.getConnection();
@@ -21,12 +20,9 @@ async function testConnection() {
     connection.release();
     return true;
   } catch (err) {
-    console.error("❌ DB ERROR:", err);
+    console.error("❌ DB ERROR:", err.message);
     throw err;
   }
 }
 
 module.exports = { pool, testConnection };
-console.log("DB_HOST:", process.env.DB_HOST);
-console.log("DB_USER:", process.env.DB_USER);
-console.log("DB_NAME:", process.env.DB_NAME);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const T = {
   en: {
@@ -182,14 +182,27 @@ function FinishScreen({ t, onRetry }) {
   );
 }
 
-export default function USBDropAttack() {
+export default function USBDropAttack({ attemptId, onComplete }) {
   const [lang, setLang]         = useState("en");
   const [phase, setPhase]       = useState("intro");
   const [chosen, setChosen]     = useState(null);
   const [finished, setFinished] = useState(false);
+  const [done, setDone]         = useState(false);
+  const startTime               = useRef(Date.now());
   const t = T[lang];
 
-  function reset(nl) { setPhase("intro"); setChosen(null); setFinished(false); if(nl) setLang(nl); }
+  function handleFinish() {
+    if (done) return;
+    setDone(true);
+    const timeTaken = Math.round((Date.now() - startTime.current) / 1000);
+    const correct = chosen !== null && t.scenario.options[chosen]?.correct === true;
+    if (onComplete) onComplete({
+      answers: { chosen, correct },
+      score: correct ? 100 : 0,
+      timeTaken,
+    });
+  }
+  function reset(nl) { setPhase("intro"); setChosen(null); setFinished(false); setDone(false); startTime.current = Date.now(); if(nl) setLang(nl); }
 
   const outcome = chosen ? t.outcomes[chosen] : null;
   const isSafe  = chosen ? t.options.find(o=>o.id===chosen)?.isSafe : false;
@@ -279,7 +292,7 @@ export default function USBDropAttack() {
 
             <div className="usb-btn-group">
               <button className="usb-btn usb-btn-outline" onClick={()=>reset()}>{t.retryBtn}</button>
-              <button className="usb-btn usb-btn-primary" onClick={()=>setFinished(true)}>{t.finishBtn}</button>
+              <button className="usb-btn usb-btn-primary" onClick={() => handleFinish()}>{t.finishBtn}</button>
             </div>
             {finished && <FinishScreen t={t} onRetry={()=>reset()}/>}
           </div>

@@ -1,170 +1,462 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../../services/api";
 import PageHeader from "../../components/ui/PageHeader";
 import DataTable from "../../components/ui/DataTable";
 import StatusBadge from "../../components/ui/StatusBadge";
 import Modal from "../../components/ui/Modal";
-import "../../styles/students.css";
+import "../../styles/org-students.css";
 
-const MOCK = [
-  { id:1, name:"Arun Sharma",   email:"arun@tech.np",  status:"Active",   progress:85, joined:"2024-01-10" },
-  { id:2, name:"Priya Lama",    email:"priya@tech.np", status:"Active",   progress:62, joined:"2024-01-15" },
-  { id:3, name:"Bikash KC",     email:"bikash@tech.np",status:"Inactive", progress:0,  joined:"2024-02-01" },
-  { id:4, name:"Sita Rai",      email:"sita@tech.np",  status:"Active",   progress:91, joined:"2024-02-10" },
-  { id:5, name:"Rajan Poudel",  email:"rajan@tech.np", status:"Active",   progress:45, joined:"2024-02-18" },
-  { id:6, name:"Mina Gurung",   email:"mina@tech.np",  status:"Active",   progress:73, joined:"2024-03-02" },
-  { id:7, name:"Deepak Bhatt",  email:"deepak@tech.np",status:"Pending",  progress:10, joined:"2024-03-20" },
-];
+const EMPTY_FORM = {
+  full_name: "",
+  email: "",
+  phone: "",
+  password: "",
+};
 
-const EMPTY = { name: "", email: "" };
+function formatDate(dateValue) {
+  if (!dateValue) return "-";
 
-function ProgressBar({ value }) {
-  const color = value >= 80 ? "bg-green-500" : value >= 50 ? "bg-blue-500" : "bg-amber-400";
+  try {
+    return new Date(dateValue).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return "-";
+  }
+}
+
+function normalizeStatus(status) {
+  if (!status) return "Inactive";
+
+  const value = String(status).toLowerCase();
+
+  if (value === "active") return "Active";
+  if (value === "pending") return "Pending";
+  if (value === "suspended") return "Suspended";
+  return "Inactive";
+}
+
+function ProgressBar({ value = 0 }) {
+  const safeValue = Number(value || 0);
+
+  const colorClass =
+    safeValue >= 80
+      ? "os-progress__fill--green"
+      : safeValue >= 50
+        ? "os-progress__fill--indigo"
+        : "os-progress__fill--amber";
+
   return (
-    <div className="flex items-center gap-2">
-      <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${value}%` }} />
+    <div className="os-progress">
+      <div className="os-progress__track">
+        <div
+          className={`os-progress__fill ${colorClass}`}
+          style={{ width: `${safeValue}%` }}
+        />
       </div>
-      <span className="text-xs font-semibold text-slate-600">{value}%</span>
+      <span className="os-progress__value">{safeValue}%</span>
     </div>
   );
 }
 
-export default function Students({ onViewDetail }) {
-  const [students, setStudents] = useState(MOCK);
-  const [search, setSearch]     = useState("");
-  const [open, setOpen]         = useState(false);
-  const [form, setForm]         = useState(EMPTY);
+function StudentAvatar({ name }) {
+  const initials = (name || "S")
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  return <div className="os-student-avatar">{initials}</div>;
+}
+
+export default function Students() {
+  const navigate = useNavigate();
+
+  const [students, setStudents] = useState([]);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All Status");
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
-    // axios.get("/api/org/students").then(r => setStudents(r.data)).catch(() => {});
+    fetchStudents();
   }, []);
 
-  const filtered = students.filter(
-    (s) =>
-      s.name.toLowerCase().includes(search.toLowerCase()) ||
-      s.email.toLowerCase().includes(search.toLowerCase())
-  );
+  async function fetchStudents() {
+    try {
+      setLoading(true);
+      setErrorMessage("");
 
-  const handleAdd = () => {
-    const s = { id: Date.now(), ...form, status: "Pending", progress: 0, joined: new Date().toISOString().split("T")[0] };
-    setStudents((prev) => [s, ...prev]);
-    // axios.post("/api/org/students", form).catch(() => {});
-    setOpen(false);
-    setForm(EMPTY);
-  };
+      const res = await api.get("/organizations/students");
+      const rows = Array.isArray(res?.data?.data) ? res.data.data : [];
+
+      const mapped = rows.map((student) => ({
+        id: student.id,
+        full_name: student.full_name || "Unnamed Student",
+        email: student.email || "-",
+        phone: student.phone || "-",
+        status: normalizeStatus(student.status),
+        joined: formatDate(student.created_at),
+        progress: Number(student.progress || 0),
+        raw_created_at: student.created_at || null,
+      }));
+
+      setStudents(mapped);
+    } catch (error) {
+      console.error("Get organization students error:", error);
+      setStudents([]);
+      setErrorMessage(
+        error?.response?.data?.error || "Failed to load students"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleAddStudent() {
+    try {
+      setSubmitting(true);
+      setErrorMessage("");
+      setSuccessMessage("");
+
+      if (
+        !form.full_name.trim() ||
+        !form.email.trim() ||
+        !form.password.trim()
+      ) {
+        setErrorMessage("Full name, email and password are required.");
+        return;
+      }
+
+      if (form.phone.trim() && form.phone.trim().length > 20) {
+        setErrorMessage("Phone number must be 20 characters or less.");
+        return;
+      }
+
+      await api.post("/organizations/students", {
+        full_name: form.full_name.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        password: form.password,
+      });
+
+      setSuccessMessage("Student created successfully.");
+      setOpen(false);
+      setForm(EMPTY_FORM);
+
+      await fetchStudents();
+    } catch (error) {
+      console.error("Create organization student error:", error);
+      setErrorMessage(
+        error?.response?.data?.error || "Failed to create student"
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  const filteredStudents = useMemo(() => {
+    return students.filter((student) => {
+      const term = search.toLowerCase();
+
+      const matchesSearch =
+        student.full_name.toLowerCase().includes(term) ||
+        student.email.toLowerCase().includes(term) ||
+        student.phone.toLowerCase().includes(term);
+
+      const matchesStatus =
+        statusFilter === "All Status" || student.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [students, search, statusFilter]);
+
+  const totalStudents = filteredStudents.length;
+  const activeStudents = filteredStudents.filter(
+    (student) => student.status === "Active"
+  ).length;
+
+  const averageProgress =
+    filteredStudents.length > 0
+      ? Math.round(
+          filteredStudents.reduce(
+            (sum, student) => sum + Number(student.progress || 0),
+            0
+          ) / filteredStudents.length
+        )
+      : 0;
 
   const columns = [
     {
-      key: "name", label: "Student",
-      render: (r) => (
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-            {r.name.split(" ").map(n=>n[0]).join("").slice(0,2)}
-          </div>
-          <div>
-            <p className="font-medium text-slate-800">{r.name}</p>
-            <p className="text-xs text-slate-400">{r.email}</p>
+      key: "name",
+      label: "Student",
+      render: (row) => (
+        <div className="os-student-cell">
+          <StudentAvatar name={row.full_name} />
+
+          <div className="os-student-cell__meta">
+            <p className="os-student-cell__name">{row.full_name}</p>
+            <p className="os-student-cell__line">{row.email}</p>
+            <p className="os-student-cell__line os-student-cell__line--muted">
+              {row.phone}
+            </p>
           </div>
         </div>
       ),
     },
-    { key: "status",   label: "Status",   render: (r) => <StatusBadge status={r.status} /> },
-    { key: "progress", label: "Progress", render: (r) => <ProgressBar value={r.progress} /> },
-    { key: "joined",   label: "Joined" },
     {
-      key: "actions", label: "Actions",
-      render: (r) => (
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => onViewDetail && onViewDetail(r)}
-            className="text-xs text-indigo-600 font-medium border border-indigo-200 px-3 py-1.5 rounded-lg hover:bg-indigo-50 transition-colors"
-          >
-            View
-          </button>
-          <button
-            onClick={() => setStudents(prev => prev.filter(s => s.id !== r.id))}
-            className="text-xs text-rose-600 font-medium border border-rose-200 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition-colors"
-          >
-            Remove
-          </button>
-        </div>
+      key: "status",
+      label: "Status",
+      render: (row) => <StatusBadge status={row.status} />,
+    },
+    {
+      key: "progress",
+      label: "Progress",
+      render: (row) => <ProgressBar value={row.progress} />,
+    },
+    {
+      key: "joined",
+      label: "Joined",
+      render: (row) => <span className="os-joined">{row.joined}</span>,
+    },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (row) => (
+        <button
+          onClick={() => navigate(`/organization/students/${row.id}`)}
+          className="os-action-btn"
+        >
+          View Details
+        </button>
       ),
     },
   ];
 
   return (
-    <div className="p-6 space-y-6">
-      <PageHeader
-        title="Students"
-        subtitle="Manage students enrolled in your organization"
-        action={
-          <button
-            onClick={() => setOpen(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors shadow-sm shadow-indigo-200 flex items-center gap-2"
-          >
-            <span>+</span> Add Student
-          </button>
-        }
-      />
-
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <input
-            type="text"
-            placeholder="Search by name or email..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all"
-          />
-          <select className="border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 text-slate-600">
-            <option>All Status</option>
-            <option>Active</option>
-            <option>Inactive</option>
-            <option>Pending</option>
-          </select>
-        </div>
-
-        <div className="flex gap-4 mb-5 text-sm">
-          <span className="text-slate-500">Total: <strong className="text-slate-800">{filtered.length}</strong></span>
-          <span className="text-green-600">Active: <strong>{filtered.filter(s=>s.status==="Active").length}</strong></span>
-        </div>
-
-        <DataTable columns={columns} data={filtered} emptyMessage="No students found." />
+    <div className="os-page">
+      <div className="os-page__header">
+        <PageHeader
+          title="Students"
+          subtitle="Manage students enrolled in your organization"
+          action={
+            <button
+              onClick={() => {
+                setErrorMessage("");
+                setSuccessMessage("");
+                setOpen(true);
+              }}
+              className="os-primary-btn"
+            >
+              <span className="os-primary-btn__icon">＋</span>
+              <span>Add Student</span>
+            </button>
+          }
+        />
       </div>
 
-      <Modal isOpen={open} onClose={() => setOpen(false)} title="Add Student">
-        <div className="space-y-4">
+      <section className="os-hero">
+        <div className="os-hero__content">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Full Name</label>
+            <p className="os-hero__eyebrow">Student Management</p>
+            <h2 className="os-hero__title">Organization Students Overview</h2>
+            <p className="os-hero__subtitle">
+              Track student enrollment, active participation, and average
+              training progress from one place.
+            </p>
+          </div>
+
+          <div className="os-hero__badge">
+            <span className="os-hero__badge-label">Filtered Results</span>
+            <strong className="os-hero__badge-value">
+              {loading ? "..." : totalStudents}
+            </strong>
+          </div>
+        </div>
+
+        <div className="os-hero__stats">
+          <div className="os-hero-stat">
+            <span className="os-hero-stat__label">Total Students</span>
+            <div className="os-hero-stat__row">
+              <strong className="os-hero-stat__value">
+                {loading ? "..." : totalStudents}
+              </strong>
+              <span className="os-hero-stat__icon">🎓</span>
+            </div>
+          </div>
+
+          <div className="os-hero-stat">
+            <span className="os-hero-stat__label">Active Students</span>
+            <div className="os-hero-stat__row">
+              <strong className="os-hero-stat__value">
+                {loading ? "..." : activeStudents}
+              </strong>
+              <span className="os-hero-stat__icon">✅</span>
+            </div>
+          </div>
+
+          <div className="os-hero-stat">
+            <span className="os-hero-stat__label">Average Progress</span>
+            <div className="os-hero-stat__row">
+              <strong className="os-hero-stat__value">
+                {loading ? "..." : `${averageProgress}%`}
+              </strong>
+              <span className="os-hero-stat__icon">📈</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {errorMessage && (
+        <div className="os-alert os-alert--error">{errorMessage}</div>
+      )}
+
+      {successMessage && (
+        <div className="os-alert os-alert--success">{successMessage}</div>
+      )}
+
+      <section className="os-filter-card">
+        <div className="os-filter-card__header">
+          <div>
+            <h3 className="os-filter-card__title">Search and Filter</h3>
+            <p className="os-filter-card__subtitle">
+              Find students by name, email, phone, or status.
+            </p>
+          </div>
+        </div>
+
+        <div className="os-filter-row">
+          <div className="os-filter-field os-filter-field--grow">
+            <label className="os-label">Search</label>
+            <input
+              type="text"
+              placeholder="Search by name, email, or phone..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="os-input"
+            />
+          </div>
+
+          <div className="os-filter-field os-filter-field--select">
+            <label className="os-label">Status</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="os-select"
+            >
+              <option>All Status</option>
+              <option>Active</option>
+              <option>Inactive</option>
+              <option>Pending</option>
+              <option>Suspended</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section className="os-table-card">
+        <div className="os-table-card__header">
+          <div>
+            <h3 className="os-table-card__title">Student Directory</h3>
+            <p className="os-table-card__subtitle">
+              Detailed list of students in your organization.
+            </p>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="os-loading">Loading students...</div>
+        ) : (
+          <DataTable
+            columns={columns}
+            data={filteredStudents}
+            emptyMessage="No students found."
+          />
+        )}
+      </section>
+
+      <Modal isOpen={open} onClose={() => setOpen(false)} title="Add Student">
+        <div className="os-modal-form">
+          <div className="os-form-group">
+            <label className="os-label">Full Name</label>
             <input
               type="text"
               placeholder="e.g. Arun Sharma"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all"
+              value={form.full_name}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, full_name: e.target.value }))
+              }
+              className="os-input"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Email Address</label>
+
+          <div className="os-form-group">
+            <label className="os-label">Email Address</label>
             <input
               type="email"
               placeholder="e.g. arun@org.np"
               value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all"
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, email: e.target.value }))
+              }
+              className="os-input"
             />
           </div>
-          <p className="text-xs text-slate-400">An invitation email will be sent to the student.</p>
-          <div className="flex gap-3 pt-2">
+
+          <div className="os-form-group">
+            <label className="os-label">Phone Number</label>
+            <input
+              type="text"
+              placeholder="e.g. 9841234567"
+              value={form.phone}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, phone: e.target.value }))
+              }
+              className="os-input"
+            />
+          </div>
+
+          <div className="os-form-group">
+            <label className="os-label">Password</label>
+            <input
+              type="password"
+              placeholder="Enter password"
+              value={form.password}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, password: e.target.value }))
+              }
+              className="os-input"
+            />
+          </div>
+
+          <p className="os-form-note">
+            This student will be created inside your organization.
+          </p>
+
+          <div className="os-modal-actions">
             <button
-              onClick={handleAdd}
-              className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
+              onClick={handleAddStudent}
+              disabled={submitting}
+              className={`os-submit-btn ${
+                submitting ? "is-disabled" : ""
+              }`}
             >
-              Add Student
+              {submitting ? "Creating..." : "Add Student"}
             </button>
+
             <button
               onClick={() => setOpen(false)}
-              className="flex-1 border border-slate-200 text-slate-600 text-sm font-medium py-2.5 rounded-xl hover:bg-slate-50 transition-colors"
+              disabled={submitting}
+              className="os-cancel-btn"
             >
               Cancel
             </button>

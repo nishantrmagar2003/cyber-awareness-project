@@ -1,14 +1,154 @@
-import { useParams, Link } from "react-router-dom";
-import { useState } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import api from "../../services/api";
 import VideoPlayer from "./VideoPlayer";
+import "../../styles/topic-details.css";
 
 export default function TopicDetails() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const { id } = useParams();        // FIX: get id from route
   const [step, setStep] = useState(1);
+  const [topicProgress, setTopicProgress] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [videoEnded, setVideoEnded] = useState(false);
+  const [savingVideo, setSavingVideo] = useState(false);
+  const [textRead, setTextRead] = useState(false);
+  const [savingText, setSavingText] = useState(false);
+  const [topicData, setTopicData] = useState(null);
+  const [accessChecked, setAccessChecked] = useState(false);
+  const [revisionMode, setRevisionMode] = useState(false);
+  const [revisionStep, setRevisionStep] = useState("video");
+
+  useEffect(() => {
+    setVideoEnded(false);
+    setTextRead(false);
+    setRevisionMode(false);
+    setRevisionStep("video");
+    loadProgress();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, location.pathname, location.search]);
+
+  async function loadProgress() {
+    try {
+      setLoading(true);
+      setAccessChecked(false);
+
+      const [progressRes, topicRes] = await Promise.all([
+        api.get(`/progress/topic/${id}`),
+        api.get(`/topics/${id}`),
+      ]);
+
+      const progressData = progressRes?.data?.data || null;
+      const currentTopic = topicRes?.data?.data || null;
+
+      setTopicProgress(progressData);
+      setTopicData(currentTopic);
+
+      if (!currentTopic?.module_id) {
+        setAccessChecked(true);
+        return;
+      }
+
+      const moduleRes = await api.get(`/modules/${currentTopic.module_id}`);
+      const moduleData = moduleRes?.data?.data || null;
+
+      if (!moduleData || Number(moduleData.is_unlocked || 0) !== 1) {
+        navigate(`/student/module/${currentTopic.module_id}`, { replace: true });
+        return;
+      }
+
+      const topicListRes = await api.get(`/topics/module/${currentTopic.module_id}`);
+      const moduleTopics = Array.isArray(topicListRes?.data?.data)
+        ? topicListRes.data.data
+        : [];
+
+      const topicExistsInModule = moduleTopics.some(
+        (topic) => String(topic.id) === String(id)
+      );
+
+      if (!topicExistsInModule) {
+        navigate(`/student/module/${currentTopic.module_id}`, { replace: true });
+        return;
+      }
+
+      setAccessChecked(true);
+    } catch (err) {
+      console.error("Progress/topic load error:", err);
+      setAccessChecked(true);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleTextScroll(e) {
+    const element = e.target;
+    const isAtBottom =
+      element.scrollHeight - element.scrollTop <= element.clientHeight + 10;
+
+    if (isAtBottom) {
+      setTextRead(true);
+    }
+  }
+
+  async function openSimulationByOrder(simulationNo) {
+    try {
+      const res = await api.get(`/simulations/topics/${id}/simulations`);
+      const simulations = Array.isArray(res?.data?.data) ? res.data.data : [];
+
+      if (!simulations.length) {
+        alert(`Simulation ${simulationNo} not found`);
+        return;
+      }
+
+      const selectedSimulation = simulations.find(
+        (sim) => Number(sim.simulation_no) === Number(simulationNo)
+      );
+
+      if (!selectedSimulation) {
+        alert(`Simulation ${simulationNo} not found`);
+        return;
+      }
+
+      navigate(`/student/simulation/${selectedSimulation.id}`);
+    } catch (err) {
+      console.error(`Simulation ${simulationNo} fetch error:`, err);
+      alert(`Failed to load Simulation ${simulationNo}`);
+    }
+  }
+
+  useEffect(() => {
+    if (!topicProgress || loading) return;
+
+    const videoDone = Number(topicProgress.video_completed || 0) === 1;
+    const textDone = Number(topicProgress.text_completed || 0) === 1;
+    const quizPassed = Number(topicProgress.best_quiz_score || 0) >= 70;
+    const simulationsCompleted = Number(topicProgress.simulations_completed || 0);
+    const sim1Done = simulationsCompleted >= 1;
+    const sim2Done = simulationsCompleted >= 2;
+
+    setVideoEnded(videoDone);
+    setTextRead(textDone);
+
+    if (!videoDone) {
+      setStep(1);
+    } else if (!textDone) {
+      setStep(2);
+    } else if (!quizPassed) {
+      setStep(3);
+    } else if (!sim1Done) {
+      setStep(4);
+    } else if (!sim2Done) {
+      setStep(5);
+    } else {
+      setStep(6);
+    }
+  }, [topicProgress, loading]);
 
   const topicContent = {
-    1: { title: "Password Security", description: ` पासवर्ड सुरक्षा (Password Security)
+    1: {
+      title: "Password Security", description: ` पासवर्ड सुरक्षा (Password Security)
 
 १. विषयको मुख्य विचार
 
@@ -76,7 +216,8 @@ export default function TopicDetails() {
 
 
 ` },
-    2: { title: "2FA", description: ` दुई चरण प्रमाणीकरण (Two-Factor Authentication)
+    2: {
+      title: "2FA", description: ` दुई चरण प्रमाणीकरण (Two-Factor Authentication)
 
 १. विषयको मुख्य विचार
 
@@ -152,7 +293,8 @@ export default function TopicDetails() {
 दुई चरण प्रमाणीकरण अनलाइन खाताको महत्वपूर्ण सुरक्षा प्रणाली हो। पासवर्डसँगै अतिरिक्त सुरक्षा कोड प्रयोग गर्दा ह्याकरलाई खाता ह्याक गर्न धेरै कठिन हुन्छ।
 
 ` },
-    3: { title: "Digital Identity Protection", description: ` डिजिटल परिचय सुरक्षा (Digital Identity Protection)
+    3: {
+      title: "Digital Identity Protection", description: ` डिजिटल परिचय सुरक्षा (Digital Identity Protection)
 
 १. विषयको मुख्य विचार
 
@@ -224,7 +366,8 @@ export default function TopicDetails() {
 डिजिटल परिचय तपाईंको अनलाइन छवि र पहिचान हो। यसलाई सुरक्षित राख्नु व्यक्तिगत सुरक्षा, प्रतिष्ठा र भविष्यका अवसरका लागि अत्यन्त महत्वपूर्ण हुन्छ।
 
 ` },
-    4: { title: "Phishing", description: ` फिसिङ सचेतना (Phishing Awareness)
+    4: {
+      title: "Phishing", description: ` फिसिङ सचेतना (Phishing Awareness)
 
 १. विषयको मुख्य विचार
 
@@ -297,7 +440,8 @@ export default function TopicDetails() {
 फिसिङ साइबर ठगीको सामान्य तरिका हो। सोचेर मात्र लिंक खोल्ने बानीले धेरै ठगीबाट सजिलै बच्न सकिन्छ।
 
 ` },
-    5: { title: "QR Code Scam Awareness", description: ` क्यूआर कोड ठगी सचेतना (QR Code Scam Awareness)
+    5: {
+      title: "QR Code Scam Awareness", description: ` क्यूआर कोड ठगी सचेतना (QR Code Scam Awareness)
 
 १. विषयको मुख्य विचार
 
@@ -370,7 +514,8 @@ export default function TopicDetails() {
 
 क्यूआर कोड प्रयोग गर्दा सुविधा हुन्छ तर सावधानी पनि आवश्यक हुन्छ। स्क्यान गर्नु अघि जाँच गर्ने बानीले धेरै डिजिटल ठगीबाट बच्न सकिन्छ।` },
 
-    6: { title: "Safe Website & App Verification", description: ` सुरक्षित वेबसाइट र एप पहिचान (Safe Website & App Verification)
+    6: {
+      title: "Safe Website & App Verification", description: ` सुरक्षित वेबसाइट र एप पहिचान (Safe Website & App Verification)
 
 १. विषयको मुख्य विचार
 
@@ -446,7 +591,8 @@ export default function TopicDetails() {
 
 सुरक्षित वेबसाइट र एप प्रयोग गर्नु डिजिटल सुरक्षाको महत्वपूर्ण भाग हो। जाँच गरेर मात्र लगइन गर्ने बानीले धेरै साइबर ठगीबाट बच्न सकिन्छ।` },
 
-    7: { title: " Mobile Safety ", description: ` मोबाइल सुरक्षा (Mobile Safety)
+    7: {
+      title: " Mobile Safety ", description: ` मोबाइल सुरक्षा (Mobile Safety)
 
 १. विषयको मुख्य विचार
 
@@ -519,7 +665,8 @@ export default function TopicDetails() {
 
 ` },
 
-    8: { title: "Cyberbullying Awareness", description: ` साइबर बुलिइङ सचेतना (Cyberbullying Awareness)
+    8: {
+      title: "Cyberbullying Awareness", description: ` साइबर बुलिइङ सचेतना (Cyberbullying Awareness)
 
 १. विषयको मुख्य विचार
 
@@ -590,7 +737,8 @@ export default function TopicDetails() {
 
 ` },
 
-    9: { title: "Cyber Security Awareness Workplace", description: ` कार्यस्थलमा साइबर सुरक्षा सचेतना (Cyber Security Awareness – Workplace)
+    9: {
+      title: "Cyber Security Awareness Workplace", description: ` कार्यस्थलमा साइबर सुरक्षा सचेतना (Cyber Security Awareness – Workplace)
 
 १. विषयको मुख्य विचार
 
@@ -660,96 +808,373 @@ export default function TopicDetails() {
 ७. छोटो सारांश
 
 कार्यस्थलमा साइबर सुरक्षा सबै कर्मचारीको जिम्मेवारी हो। सचेत र सुरक्षित डिजिटल व्यवहार अपनाउँदा कम्पनीको डाटा र प्रणाली सुरक्षित राख्न सकिन्छ।` }
-  };
+ };
 
-  const topic = topicContent[Number(id)];
+  const fallbackTopic = topicContent[Number(id)];
 
-  return (
-    <div className="p-6">
+  const topic = useMemo(
+    () => ({
+      title: topicData?.title || fallbackTopic?.title,
+      description: topicData?.description || fallbackTopic?.description,
+      video_url: topicData?.video_url || null,
+    }),
+    [topicData, fallbackTopic]
+  );
 
-      <h1 className="text-2xl font-bold mb-4">
-        {topic?.title || "Topic Details"}
-      </h1>
+  const isCompletedTopic =
+    Number(topicProgress?.completed || 0) === 1 ||
+    topicProgress?.status === "completed";
 
-      {step === 1 && (
-        <>
-          <div className="mb-6">
-            <VideoPlayer />
-          </div>
+  if (loading || !accessChecked) {
+    return <div className="td-loading">Loading...</div>;
+  }
 
-          <button
-            onClick={() => setStep(2)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg"
-          >
-            Next
-          </button>
-        </>
-      )}
+  if (!topic?.title) {
+    return <div className="td-not-found">Topic not found</div>;
+  }
 
-      {step === 2 && (
-        <>
-          <div className="bg-white shadow rounded-lg p-6 border mb-6">
-            <h2 className="text-lg font-semibold mb-3">Topic Explanation</h2>
+  if (isCompletedTopic && !revisionMode) {
+    return (
+      <div className="td-page">
+        <section className="td-hero">
+          <p className="td-hero__eyebrow">Topic Learning Flow</p>
+          <h1 className="td-hero__title">{topic.title}</h1>
+          <p className="td-hero__subtitle">
+            This topic has already been completed. You can revise it any time.
+          </p>
+        </section>
 
-            <p className="text-gray-700 leading-relaxed whitespace-pre-line max-w-4xl">
-              {topic?.description}
+        <section className="td-card td-card--padded">
+          <div className="td-alert td-alert--success">
+            <h2 className="td-alert__title">✅ Topic already completed</h2>
+            <p className="td-alert__text">
+              You have already completed this topic. You can revise it anytime
+              without changing your saved progress, badge, or completion status.
             </p>
           </div>
 
-          <button
-            onClick={() => setStep(3)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg"
-          >
-            Next
-          </button>
-        </>
+          <div style={{ marginTop: "18px" }} className="td-actions">
+            <button
+              onClick={() => {
+                setRevisionStep("video");
+                setRevisionMode(true);
+              }}
+              className="td-btn td-btn--blue"
+            >
+              Review Video
+            </button>
+
+            <button
+              onClick={() => {
+                setRevisionStep("text");
+                setRevisionMode(true);
+              }}
+              className="td-btn td-btn--purple"
+            >
+              Read Explanation
+            </button>
+
+            <button
+              onClick={() => navigate(`/student/quiz/${id}`)}
+              className="td-btn td-btn--yellow"
+            >
+              Retake Quiz
+            </button>
+
+            <button
+              onClick={() => openSimulationByOrder(1)}
+              className="td-btn td-btn--red"
+            >
+              Retry Simulation 1
+            </button>
+
+            <button
+              onClick={() => openSimulationByOrder(2)}
+              className="td-btn td-btn--pink"
+            >
+              Retry Simulation 2
+            </button>
+
+            <button
+              onClick={() => {
+                if (topicData?.module_id) {
+                  navigate(`/student/module/${topicData.module_id}`);
+                } else {
+                  navigate(`/student/modules`);
+                }
+              }}
+              className="td-btn td-btn--dark"
+            >
+              Back to Module
+            </button>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  return (
+    <div className="td-page">
+      <section className="td-hero">
+        <p className="td-hero__eyebrow">Topic Learning Flow</p>
+        <h1 className="td-hero__title">{topic.title}</h1>
+        <p className="td-hero__subtitle">
+          Complete the topic step by step through video, explanation, quiz, and simulations.
+        </p>
+      </section>
+
+      {revisionMode && (
+        <section className="td-card td-card--padded">
+          <div className="td-alert td-alert--warning">
+            <h2 className="td-alert__title">Revision Mode</h2>
+            <p className="td-alert__text">
+              This is review mode only. Your topic completion, badge, and saved
+              progress will not be changed.
+            </p>
+          </div>
+
+          <div style={{ marginTop: "18px", marginBottom: "18px" }} className="td-actions">
+            <button
+              onClick={() => setRevisionStep("video")}
+              className="td-btn td-btn--blue"
+            >
+              Video
+            </button>
+
+            <button
+              onClick={() => setRevisionStep("text")}
+              className="td-btn td-btn--purple"
+            >
+              Explanation
+            </button>
+
+            <button
+              onClick={() => navigate(`/student/quiz/${id}`)}
+              className="td-btn td-btn--yellow"
+            >
+              Retake Quiz
+            </button>
+
+            <button
+              onClick={() => openSimulationByOrder(1)}
+              className="td-btn td-btn--red"
+            >
+              Retry Simulation 1
+            </button>
+
+            <button
+              onClick={() => openSimulationByOrder(2)}
+              className="td-btn td-btn--pink"
+            >
+              Retry Simulation 2
+            </button>
+
+            <button
+              onClick={() => setRevisionMode(false)}
+              className="td-btn td-btn--dark"
+            >
+              Exit Revision
+            </button>
+          </div>
+
+          {revisionStep === "video" && (
+            <div className="mb-6">
+              <VideoPlayer onComplete={() => {}} />
+            </div>
+          )}
+
+          {revisionStep === "text" && (
+            <div className="td-card td-text-card">
+              <div className="td-text-card__body">
+                <p className="td-description">{topic.description}</p>
+              </div>
+            </div>
+          )}
+        </section>
       )}
 
-      {step === 3 && (
-        <>
-          <Link
-            to={`/student/quiz/${id}`}
-            className="px-4 py-2 rounded-lg bg-yellow-500 text-white font-medium"
-          >
-            Start Quiz
-          </Link>
+      {!revisionMode && step === 1 && (
+        <section className="td-step-card td-card">
+          <div className="td-step-card__head">
+            <p className="td-step-card__eyebrow">Step 1</p>
+            <h2 className="td-step-card__title">Watch the learning video</h2>
+            <p className="td-step-card__text">
+              Finish the video first, then continue to the next step.
+            </p>
+          </div>
 
-          <button
-            onClick={() => setStep(4)}
-            className="ml-3 bg-blue-600 text-white px-4 py-2 rounded-lg"
-          >
-            Next
-          </button>
-        </>
+          <div className="td-stack">
+            <VideoPlayer
+              onComplete={() => {
+                setVideoEnded(true);
+              }}
+            />
+
+            <div className="td-actions">
+              <button
+                disabled={!videoEnded || savingVideo}
+                onClick={async () => {
+                  try {
+                    setSavingVideo(true);
+                    await api.post(`/topics/${id}/video-complete`);
+                    await loadProgress();
+                  } catch (err) {
+                    console.error("Video complete error:", err);
+                    alert("Could not save video progress");
+                  } finally {
+                    setSavingVideo(false);
+                  }
+                }}
+                className={`td-btn ${
+                  !videoEnded || savingVideo ? "td-btn--disabled" : "td-btn--blue"
+                }`}
+              >
+                {savingVideo ? "Saving..." : "Next"}
+              </button>
+            </div>
+          </div>
+        </section>
       )}
 
-      {step === 4 && (
-        <>
-          <Link
-            to={`/student/simulation/${id}`}
-            className="px-4 py-2 rounded-lg bg-red-500 text-white font-medium"
-          >
-            Start Simulation 1
-          </Link>
+      {!revisionMode && step === 2 && (
+        <section className="td-step-card td-card">
+          <div className="td-step-card__head">
+            <p className="td-step-card__eyebrow">Step 2</p>
+            <h2 className="td-step-card__title">Read the explanation</h2>
+            <p className="td-step-card__text">
+              Scroll through the full explanation to unlock the next step.
+            </p>
+          </div>
 
-          <button
-            onClick={() => setStep(5)}
-            className="ml-3 bg-blue-600 text-white px-4 py-2 rounded-lg"
-          >
-            Next
-          </button>
-        </>
+          <div className="td-stack">
+            <div className="td-card td-text-card">
+              <div className="td-text-card__body" onScroll={handleTextScroll}>
+                <p className="td-description">{topic.description}</p>
+              </div>
+            </div>
+
+            <div className="td-actions">
+              <button
+                disabled={!textRead || savingText}
+                onClick={async () => {
+                  try {
+                    setSavingText(true);
+                    await api.post(`/topics/${id}/text-complete`);
+                    await loadProgress();
+                  } catch (err) {
+                    console.error("Text complete error:", err);
+                    alert("Could not save text progress");
+                  } finally {
+                    setSavingText(false);
+                  }
+                }}
+                className={`td-btn ${
+                  !textRead || savingText ? "td-btn--disabled" : "td-btn--blue"
+                }`}
+              >
+                {savingText ? "Saving..." : "Next"}
+              </button>
+            </div>
+
+            {!textRead && (
+              <p className="td-helper">
+                Scroll to the bottom of the explanation to enable Next.
+              </p>
+            )}
+          </div>
+        </section>
       )}
 
-      {step === 5 && (
-        <Link
-          to={`/student/simulation2/${id}`}
-          className="px-4 py-2 rounded-lg bg-purple-600 text-white font-medium"
-        >
-          Start Simulation 2
-        </Link>
+      {!revisionMode && step === 3 && (
+        <section className="td-step-card td-card">
+          <div className="td-step-card__head">
+            <p className="td-step-card__eyebrow">Step 3</p>
+            <h2 className="td-step-card__title">Take the quiz</h2>
+            <p className="td-step-card__text">
+              Test your understanding before moving to simulations.
+            </p>
+          </div>
+
+          <div className="td-actions">
+            <button
+              onClick={() => navigate(`/student/quiz/${id}`)}
+              className="td-btn td-btn--yellow"
+            >
+              Start Quiz
+            </button>
+          </div>
+        </section>
       )}
 
+      {!revisionMode && step === 4 && (
+        <section className="td-step-card td-card">
+          <div className="td-step-card__head">
+            <p className="td-step-card__eyebrow">Step 4</p>
+            <h2 className="td-step-card__title">Start Simulation 1</h2>
+            <p className="td-step-card__text">
+              Practice the first scenario-based activity.
+            </p>
+          </div>
+
+          <div className="td-actions">
+            <button
+              onClick={() => openSimulationByOrder(1)}
+              className="td-btn td-btn--red"
+            >
+              Start Simulation 1
+            </button>
+          </div>
+        </section>
+      )}
+
+      {!revisionMode && step === 5 && (
+        <section className="td-step-card td-card">
+          <div className="td-step-card__head">
+            <p className="td-step-card__eyebrow">Step 5</p>
+            <h2 className="td-step-card__title">Start Simulation 2</h2>
+            <p className="td-step-card__text">
+              Complete the second scenario to finish the topic.
+            </p>
+          </div>
+
+          <div className="td-actions">
+            <button
+              onClick={() => openSimulationByOrder(2)}
+              className="td-btn td-btn--purple"
+            >
+              Start Simulation 2
+            </button>
+          </div>
+        </section>
+      )}
+
+      {!revisionMode && step === 6 && (
+        <section className="td-card td-card--padded">
+          <div className="td-alert td-alert--success">
+            <h2 className="td-alert__title">✅ Topic completed</h2>
+            <p className="td-alert__text">
+              You completed video, explanation, quiz, simulation 1, and simulation 2.
+            </p>
+          </div>
+
+          <div style={{ marginTop: "18px" }} className="td-actions">
+            <button
+              onClick={() => {
+                if (topicData?.module_id) {
+                  navigate(`/student/module/${topicData.module_id}`);
+                } else {
+                  navigate(`/student/modules`);
+                }
+              }}
+              className="td-btn td-btn--green"
+            >
+              Back to Module
+            </button>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
+
+

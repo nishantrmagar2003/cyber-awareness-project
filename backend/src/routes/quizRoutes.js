@@ -23,11 +23,56 @@ router.post(
   quizController.addQuestion
 );
 
+router.put(
+  "/:quizId",
+  verifyToken,
+  requireRole("superadmin"),
+  quizController.updateQuiz
+);
+
+router.delete(
+  "/:quizId",
+  verifyToken,
+  requireRole("superadmin"),
+  quizController.deleteQuiz
+);
+
+router.put(
+  "/questions/:questionId",
+  verifyToken,
+  requireRole("superadmin"),
+  quizController.updateQuestion
+);
+
+router.delete(
+  "/questions/:questionId",
+  verifyToken,
+  requireRole("superadmin"),
+  quizController.deleteQuestion
+);
+
 /* =====================================================
-   ADMIN ANALYTICS ROUTES (STATIC ROUTES FIRST)
+   SUPERADMIN QUIZ FETCH ROUTES
 ===================================================== */
 
-// Suspicious attempts dashboard
+router.get(
+  "/admin/module/:moduleId/pre-assessment",
+  verifyToken,
+  requireRole("superadmin"),
+  quizController.getAdminPreAssessmentByModuleId
+);
+
+router.get(
+  "/admin/topic/:topicId",
+  verifyToken,
+  requireRole("superadmin"),
+  quizController.getAdminQuizByTopicId
+);
+
+/* =====================================================
+   ADMIN ANALYTICS ROUTES
+===================================================== */
+
 router.get(
   "/admin/suspicious",
   verifyToken,
@@ -35,7 +80,6 @@ router.get(
   quizController.getSuspiciousAttempts
 );
 
-// Question difficulty analytics per quiz
 router.get(
   "/:quizId/analytics",
   verifyToken,
@@ -44,7 +88,7 @@ router.get(
 );
 
 /* =====================================================
-   DASHBOARD STATS ROUTE (NEW)
+   DASHBOARD STATS
 ===================================================== */
 
 router.get(
@@ -54,24 +98,39 @@ router.get(
 );
 
 /* =====================================================
+   STUDENT QUIZ FETCH ROUTES
+   KEEP THESE ABOVE /:quizId
+===================================================== */
+
+// module pre-assessment
+router.get(
+  "/module/:moduleId/pre-assessment",
+  verifyToken,
+  quizController.getPreAssessmentByModuleId
+);
+
+// topic quiz
+router.get(
+  "/topic/:topicId",
+  verifyToken,
+  quizController.getQuizByTopicId
+);
+
+/* =====================================================
    STUDENT SUBMIT ROUTE
 ===================================================== */
 
 router.post(
   "/:quizId/submit",
   verifyToken,
-  requireRole("org_student", "general_user"),
+  requireRole("general_user", "org_student"),
   quizController.submitQuiz
 );
-
-/* =====================================================
-   STUDENT ATTEMPTS ROUTE
-===================================================== */
 
 router.get(
   "/:quizId/attempts",
   verifyToken,
-  requireRole("org_student", "general_user"),
+  requireRole("general_user", "org_student"),
   async (req, res) => {
     try {
       const { quizId } = req.params;
@@ -88,7 +147,6 @@ router.get(
       );
 
       res.json({ attempts });
-
     } catch (err) {
       console.error("GET ATTEMPTS ERROR:", err);
       res.status(500).json({ error: "Internal server error" });
@@ -97,21 +155,16 @@ router.get(
 );
 
 /* =====================================================
-   QUIZ FETCH ROUTES (DYNAMIC ROUTES LAST)
+   QUIZ FETCH BY ID
+   KEEP LAST
 ===================================================== */
-router.get(
-  "/topic/:topicId",
-  verifyToken,
-  quizController.getQuizByTopicId
-);
-// IMPORTANT: More specific route first
+
 router.get(
   "/:quizId/questions",
   verifyToken,
   quizController.getQuizById
 );
 
-// Then generic quiz route
 router.get(
   "/:quizId",
   verifyToken,

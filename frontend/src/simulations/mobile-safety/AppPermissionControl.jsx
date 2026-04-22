@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 const T = {
   en: {
@@ -240,12 +240,14 @@ function FinishScreen({ t, onRetry }) {
   );
 }
 
-export default function AppPermissionControl() {
+export default function AppPermissionControl({ attemptId, onComplete }) {
   const [lang, setLang]         = useState("en");
   const [phase, setPhase]       = useState("intro");
   const [actions, setActions]   = useState({});
   const [revealed, setRevealed] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [done, setDone]         = useState(false);
+  const startTime               = useRef(Date.now());
   const t = T[lang];
 
   function setAction(id, val) {
@@ -257,8 +259,20 @@ export default function AppPermissionControl() {
     setTimeout(() => setPhase("results"), 300);
   }
 
+  function handleFinish() {
+    if (done) return;
+    setDone(true);
+    const timeTaken = Math.round((Date.now() - startTime.current) / 1000);
+    const correctCount = Object.values(actions).filter(Boolean).length;
+    const total = Object.keys(actions).length;
+    if (onComplete) onComplete({
+      answers: { actions, correctCount, total },
+      score: total > 0 ? Math.round((correctCount / total) * 100) : 0,
+      timeTaken,
+    });
+  }
   function reset(newLang) {
-    setPhase("intro"); setActions({}); setRevealed(false); setFinished(false);
+    setPhase("intro"); setActions({}); setRevealed(false); setFinished(false); setDone(false); startTime.current = Date.now();
     if (newLang) setLang(newLang);
   }
 
@@ -406,7 +420,7 @@ export default function AppPermissionControl() {
 
             <div className="pc-btn-group">
               <button className="pc-start-btn pc-outline-btn" onClick={()=>reset()}>{t.retryBtn}</button>
-              <button className="pc-start-btn" onClick={()=>setFinished(true)}>{t.finishBtn}</button>
+              <button className="pc-start-btn" onClick={() => handleFinish()}>{t.finishBtn}</button>
             </div>
             {finished && <FinishScreen t={t} onRetry={()=>reset()}/>}
           </div>

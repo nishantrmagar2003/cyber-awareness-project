@@ -1,254 +1,373 @@
-import { useEffect, useState, useMemo } from "react";
-import axios from "axios";
+import { useEffect, useMemo, useState } from "react";
+import api from "../../services/api";
 import StatsCard from "../../components/ui/StatsCard";
 import DataTable from "../../components/ui/DataTable";
 import StatusBadge from "../../components/ui/StatusBadge";
+import "./Dashboard.css";
 
-/* =========================================
-   MOCK DATA
-========================================= */
+function formatDate(value) {
+  if (!value) return "-";
 
-const MOCK_STATS = {
-  totalOrganizations: 24,
-  totalStudents: 1842,
-  totalUsers: 2109,
-  totalModules: 38,
-  totalQuizzes: 156,
-  activeOrganizations: 19,
-};
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
 
-const MOCK_ORGS = [
-  { name: "TechCorp Nepal", industry: "Technology", status: "Active", created: "2024-01-10" },
-  { name: "FinServe Ltd", industry: "Finance", status: "Active", created: "2024-02-14" },
-  { name: "HealthPlus", industry: "Healthcare", status: "Inactive", created: "2024-03-05" },
-  { name: "EduNepal", industry: "Education", status: "Active", created: "2024-03-22" },
-  { name: "GovSec Agency", industry: "Government", status: "Suspended", created: "2024-04-01" },
-];
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
 
-const MOCK_USERS = [
-  { name: "Arun Sharma", email: "arun@tech.np", role: "Student", org: "TechCorp Nepal", status: "Active" },
-  { name: "Priya Thapa", email: "priya@fin.np", role: "Org Admin", org: "FinServe Ltd", status: "Active" },
-  { name: "Bikash KC", email: "bikash@health.np", role: "Student", org: "HealthPlus", status: "Inactive" },
-  { name: "Sita Rai", email: "sita@edu.np", role: "Student", org: "EduNepal", status: "Active" },
-  { name: "Rajan Poudel", email: "rajan@gov.np", role: "Org Admin", org: "GovSec Agency", status: "Pending" },
-];
+function normalizeStatus(status) {
+  if (!status) return "Inactive";
 
-/* =========================================
-   COMPONENT
-========================================= */
+  const value = String(status).toLowerCase();
+
+  if (value === "active") return "Active";
+  if (value === "pending") return "Pending";
+  if (value === "suspended") return "Suspended";
+
+  return "Inactive";
+}
+
+function normalizeRole(role) {
+  if (!role) return "-";
+
+  if (role === "superadmin") return "Super Admin";
+  if (role === "org_admin") return "Org Admin";
+  if (role === "org_student") return "Org Student";
+  if (role === "general_user") return "General User";
+
+  return role;
+}
+
+function toNumber(value) {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : 0;
+}
+
+function getActiveCount(list = []) {
+  return list.filter((item) => item.status === "Active").length;
+}
 
 export default function SuperAdminDashboard() {
+  const [stats, setStats] = useState({
+    total_organizations: 0,
+    total_org_admins: 0,
+    total_students: 0,
+    total_premium_modules: 0,
+    total_quizzes: 0,
+    total_simulations: 0,
+  });
 
-  const [stats, setStats] = useState(MOCK_STATS);
-  const [orgs, setOrgs] = useState(MOCK_ORGS);
-  const [users, setUsers] = useState(MOCK_USERS);
-  const [loading, setLoading] = useState(false);
-
-  /* =========================================
-     FETCH DATA
-  ========================================= */
+  const [organizations, setOrganizations] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchData() {
+    let cancelled = false;
+
+    async function fetchDashboard() {
       try {
         setLoading(true);
 
-        // Uncomment when backend ready
+        const res = await api.get("/organizations/superadmin/dashboard");
+        const data = res?.data?.data || {};
+        const statsData = data?.stats || {};
 
-        // const statsRes = await axios.get("/api/stats/superadmin");
-        // const orgRes = await axios.get("/api/organizations?limit=5");
-        // const userRes = await axios.get("/api/users?limit=5");
+        if (cancelled) return;
 
-        // setStats(statsRes.data);
-        // setOrgs(orgRes.data);
-        // setUsers(userRes.data);
+        setStats({
+          total_organizations: toNumber(statsData.total_organizations),
+          total_org_admins: toNumber(statsData.total_org_admins),
+          total_students: toNumber(statsData.total_students),
+          total_premium_modules: toNumber(statsData.total_premium_modules),
+          total_quizzes: toNumber(statsData.total_quizzes),
+          total_simulations: toNumber(statsData.total_simulations),
+        });
 
+        setOrganizations(
+          Array.isArray(data?.recent_organizations)
+            ? data.recent_organizations.map((row) => ({
+                id: row.id,
+                name: row.name || "Organization",
+                industry: row.industry || "-",
+                status: normalizeStatus(row.status),
+                created: formatDate(row.created_at),
+              }))
+            : []
+        );
+
+        setUsers(
+          Array.isArray(data?.recent_users)
+            ? data.recent_users.map((row) => ({
+                id: row.id,
+                name: row.full_name || "User",
+                email: row.email || "-",
+                role: normalizeRole(row.role),
+                org: row.organization_name || "-",
+                status: normalizeStatus(row.status),
+                created: formatDate(row.created_at),
+              }))
+            : []
+        );
       } catch (err) {
-        console.error("Dashboard load error:", err);
+        console.error("Superadmin dashboard load error:", err);
+
+        if (!cancelled) {
+          setStats({
+            total_organizations: 0,
+            total_org_admins: 0,
+            total_students: 0,
+            total_premium_modules: 0,
+            total_quizzes: 0,
+            total_simulations: 0,
+          });
+          setOrganizations([]);
+          setUsers([]);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
-    fetchData();
+    fetchDashboard();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  /* =========================================
-     TABLE COLUMNS
-  ========================================= */
+  const orgColumns = useMemo(
+    () => [
+      { key: "name", label: "Organization" },
+      { key: "industry", label: "Industry" },
+      {
+        key: "status",
+        label: "Status",
+        render: (row) => <StatusBadge status={row.status} />,
+      },
+      { key: "created", label: "Created" },
+    ],
+    []
+  );
 
-  const orgColumns = useMemo(() => [
-    { key: "name", label: "Organization" },
-    { key: "industry", label: "Industry" },
-    {
-      key: "status",
-      label: "Status",
-      render: (r) => <StatusBadge status={r.status} />,
-    },
-    { key: "created", label: "Created" },
-  ], []);
+  const userColumns = useMemo(
+    () => [
+      { key: "name", label: "Name" },
+      { key: "email", label: "Email" },
+      {
+        key: "role",
+        label: "Role",
+        render: (row) => (
+          <span className="sa-role-pill">
+            {row.role}
+          </span>
+        ),
+      },
+      { key: "org", label: "Organization" },
+      {
+        key: "status",
+        label: "Status",
+        render: (row) => <StatusBadge status={row.status} />,
+      },
+    ],
+    []
+  );
 
-  const userColumns = useMemo(() => [
-    { key: "name", label: "Name" },
-    { key: "email", label: "Email" },
-    {
-      key: "role",
-      label: "Role",
-      render: (r) => (
-        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700">
-          {r.role}
-        </span>
-      ),
-    },
-    { key: "org", label: "Organization" },
-    {
-      key: "status",
-      label: "Status",
-      render: (r) => <StatusBadge status={r.status} />,
-    },
-  ], []);
+  const totalUsers = useMemo(() => {
+    return toNumber(stats.total_org_admins) + toNumber(stats.total_students);
+  }, [stats.total_org_admins, stats.total_students]);
 
-  /* =========================================
-     RENDER
-  ========================================= */
+  const activeOrganizations = useMemo(() => {
+    return getActiveCount(organizations);
+  }, [organizations]);
+
+  const activeUsers = useMemo(() => {
+    return getActiveCount(users);
+  }, [users]);
+
+  const systemHealth = useMemo(() => {
+    if (loading) return "Loading";
+    if (stats.total_organizations === 0 && totalUsers === 0) return "Low Activity";
+    if (activeOrganizations > 0 || activeUsers > 0) return "Healthy";
+    return "Needs Review";
+  }, [loading, stats.total_organizations, totalUsers, activeOrganizations, activeUsers]);
+
+  const dashboardSummary = useMemo(() => {
+    return {
+      totalOrganizations: toNumber(stats.total_organizations),
+      totalUsers,
+      activeOrganizations,
+      activeUsers,
+      premiumModules: toNumber(stats.total_premium_modules),
+      quizzes: toNumber(stats.total_quizzes),
+      simulations: toNumber(stats.total_simulations),
+    };
+  }, [stats, totalUsers, activeOrganizations, activeUsers]);
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="sa-dashboard">
+      <section className="sa-hero">
+        <div className="sa-hero__content">
+          <div>
+            <p className="sa-hero__eyebrow">Super Admin Control Center</p>
+            <h1 className="sa-hero__title">Platform Dashboard Overview</h1>
+            <p className="sa-hero__subtitle">
+              Monitor organizations, users, and premium learning content from one place.
+            </p>
+          </div>
 
-      {/* =========================================
-          WELCOME
-      ========================================= */}
+          <div className="sa-hero__health">
+            <div className="sa-hero__health-label">System Status</div>
+            <div className="sa-hero__health-value">{systemHealth}</div>
+          </div>
+        </div>
 
-      <div>
-        <h1 className="text-2xl font-bold text-slate-800">
-          Dashboard Overview
-        </h1>
+        <div className="sa-hero__stats">
+          <div className="sa-hero-stat-card">
+            <span className="sa-hero-stat-label">Organizations</span>
+            <strong className="sa-hero-stat-value">
+              {loading ? "..." : dashboardSummary.totalOrganizations}
+            </strong>
+          </div>
 
-        <p className="text-sm text-slate-500 mt-1">
-          Welcome back, Super Admin — here's what's happening on the platform.
-        </p>
-      </div>
+          <div className="sa-hero-stat-card">
+            <span className="sa-hero-stat-label">Total Managed Users</span>
+            <strong className="sa-hero-stat-value">
+              {loading ? "..." : dashboardSummary.totalUsers}
+            </strong>
+          </div>
 
-      {/* =========================================
-          STATS GRID
-      ========================================= */}
+          <div className="sa-hero-stat-card">
+            <span className="sa-hero-stat-label">Premium Modules</span>
+            <strong className="sa-hero-stat-value">
+              {loading ? "..." : dashboardSummary.premiumModules}
+            </strong>
+          </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+          <div className="sa-hero-stat-card">
+            <span className="sa-hero-stat-label">Assessment Content</span>
+            <strong className="sa-hero-stat-value">
+              {loading
+                ? "..."
+                : dashboardSummary.quizzes + dashboardSummary.simulations}
+            </strong>
+          </div>
+        </div>
+      </section>
 
+      <section className="sa-stats-grid">
         <StatsCard
           title="Total Organizations"
-          value={stats?.totalOrganizations ?? 0}
+          value={loading ? "..." : stats.total_organizations}
           icon="🏢"
           color="blue"
-          change={8}
+        />
+
+        <StatsCard
+          title="Total Org Admins"
+          value={loading ? "..." : stats.total_org_admins}
+          icon="🧑‍💼"
+          color="indigo"
         />
 
         <StatsCard
           title="Total Students"
-          value={(stats?.totalStudents ?? 0).toLocaleString()}
+          value={loading ? "..." : stats.total_students}
           icon="🎓"
           color="green"
-          change={14}
         />
 
         <StatsCard
-          title="Total Users"
-          value={(stats?.totalUsers ?? 0).toLocaleString()}
-          icon="👥"
-          color="indigo"
-          change={11}
-        />
-
-        <StatsCard
-          title="Total Modules"
-          value={stats?.totalModules ?? 0}
+          title="Premium Modules"
+          value={loading ? "..." : stats.total_premium_modules}
           icon="📦"
           color="amber"
-          change={5}
         />
 
         <StatsCard
           title="Total Quizzes"
-          value={stats?.totalQuizzes ?? 0}
+          value={loading ? "..." : stats.total_quizzes}
           icon="🧠"
-          color="sky"
-          change={20}
+          color="blue"
         />
 
         <StatsCard
-          title="Active Organizations"
-          value={stats?.activeOrganizations ?? 0}
-          icon="✅"
+          title="Total Simulations"
+          value={loading ? "..." : stats.total_simulations}
+          icon="🛡️"
           color="green"
-          change={3}
         />
+      </section>
 
-      </div>
+      <section className="sa-insight-grid">
+        <div className="sa-insight-card">
+          <p className="sa-insight-card__label">Active Organizations</p>
+          <h3 className="sa-insight-card__value">
+            {loading ? "..." : activeOrganizations}
+          </h3>
+          <p className="sa-insight-card__note">
+            Based on recent organizations currently marked active.
+          </p>
+        </div>
 
-      {/* =========================================
-          RECENT ORGANIZATIONS
-      ========================================= */}
+        <div className="sa-insight-card">
+          <p className="sa-insight-card__label">Active Users</p>
+          <h3 className="sa-insight-card__value">
+            {loading ? "..." : activeUsers}
+          </h3>
+          <p className="sa-insight-card__note">
+            Based on recent users currently marked active.
+          </p>
+        </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+        <div className="sa-insight-card">
+          <p className="sa-insight-card__label">Premium Content Focus</p>
+          <h3 className="sa-insight-card__value">
+            {loading ? "..." : stats.total_premium_modules}
+          </h3>
+          <p className="sa-insight-card__note">
+            General modules stay static. Super admin manages premium learning content only.
+          </p>
+        </div>
+      </section>
 
-        <div className="flex items-center justify-between mb-5">
-
+      <div className="sa-table-card">
+        <div className="sa-section-header">
           <div>
-            <h2 className="text-base font-semibold text-slate-800">
-              Recent Organizations
-            </h2>
-
-            <p className="text-xs text-slate-400 mt-0.5">
+            <h2 className="sa-section-title">Recent Organizations</h2>
+            <p className="sa-section-subtitle">
               Latest organizations registered on the platform
             </p>
           </div>
-
-          <button className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
-            View all →
-          </button>
-
         </div>
 
         <DataTable
           columns={orgColumns}
-          data={orgs}
-          loading={loading}
+          data={organizations}
+          emptyMessage={loading ? "Loading organizations..." : "No organizations found."}
         />
-
       </div>
 
-      {/* =========================================
-          RECENT USERS
-      ========================================= */}
-
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-
-        <div className="flex items-center justify-between mb-5">
-
+      <div className="sa-table-card">
+        <div className="sa-section-header">
           <div>
-            <h2 className="text-base font-semibold text-slate-800">
-              Recent Users
-            </h2>
-
-            <p className="text-xs text-slate-400 mt-0.5">
+            <h2 className="sa-section-title">Recent Users</h2>
+            <p className="sa-section-subtitle">
               Latest users across all organizations
             </p>
           </div>
-
-          <button className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
-            View all →
-          </button>
-
         </div>
 
         <DataTable
           columns={userColumns}
           data={users}
-          loading={loading}
+          emptyMessage={loading ? "Loading users..." : "No users found."}
         />
-
       </div>
-
     </div>
   );
 }

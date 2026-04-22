@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function TopNavbar({ pageTitle, role = "Super Admin" }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
   const user = useMemo(() => {
@@ -14,9 +15,24 @@ export default function TopNavbar({ pageTitle, role = "Super Admin" }) {
   }, []);
 
   const displayName = user.full_name || user.name || role;
-  const email = user.email || (role === "Super Admin" ? "admin@cyber.np" : "org@cyber.np");
+  const email =
+    user.email || (role === "Super Admin" ? "admin@cyber.np" : "org@cyber.np");
 
-  const settingsPath = role === "Super Admin" ? "/superadmin/settings" : "/organization/settings";
+  const settingsPath =
+    role === "Super Admin"
+      ? "/superadmin/settings"
+      : "/organization/settings";
+
+  const initials = useMemo(() => {
+    const source = displayName || role;
+    return source
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+  }, [displayName, role]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -24,44 +40,75 @@ export default function TopNavbar({ pageTitle, role = "Super Admin" }) {
     navigate("/login", { replace: true });
   };
 
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (!dropdownRef.current?.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
-    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-40">
-      <div>
-        <h2 className="text-base font-semibold text-slate-700">{pageTitle}</h2>
+    <header className="app-topbar">
+      <div className="app-topbar__left">
+        <p className="app-topbar__eyebrow">{role}</p>
+        <h2 className="app-topbar__title">{pageTitle}</h2>
       </div>
 
-      <div className="flex items-center gap-4">
-        <button className="relative text-slate-500 hover:text-slate-700 transition-colors" type="button">
-          <span className="text-xl">🔔</span>
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-xs rounded-full flex items-center justify-center">
-            3
-          </span>
-        </button>
-
-        <div className="relative">
+      <div className="app-topbar__right">
+        <div className="app-topbar__profile" ref={dropdownRef}>
           <button
             onClick={() => setDropdownOpen((prev) => !prev)}
-            className="flex items-center gap-2 hover:bg-slate-50 px-2 py-1.5 rounded-lg transition-colors"
             type="button"
+            className="app-topbar__profile-btn"
           >
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
-              {role === "Super Admin" ? "SA" : "OA"}
+            <div className="app-topbar__avatar">{initials}</div>
+
+            <div className="app-topbar__meta">
+              <p className="app-topbar__name">{displayName}</p>
+              <p className="app-topbar__email">{email}</p>
             </div>
-            <div className="text-left hidden sm:block">
-              <p className="text-xs font-semibold text-slate-700">{displayName}</p>
-              <p className="text-xs text-slate-400">{email}</p>
-            </div>
-            <span className="text-slate-400 text-xs">▾</span>
+
+            <span
+              className={`app-topbar__caret ${dropdownOpen ? "is-open" : ""}`}
+            >
+              ▾
+            </span>
           </button>
 
           {dropdownOpen && (
-            <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 py-1 z-50">
-              <button type="button" onClick={() => navigate(settingsPath)} className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50">
-                <span>⚙️</span> Settings
+            <div className="app-topbar__dropdown">
+              <div className="app-topbar__dropdown-head">
+                <p className="app-topbar__dropdown-name">{displayName}</p>
+                <p className="app-topbar__dropdown-email">{email}</p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setDropdownOpen(false);
+                  navigate(settingsPath);
+                }}
+                className="app-topbar__dropdown-item"
+              >
+                <span>⚙️</span>
+                <span>Settings</span>
               </button>
-              <div className="border-t border-slate-100 my-1" />
-              <button type="button" onClick={handleLogout} className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50">
-                <span>🚪</span> Logout
+
+              <div className="app-topbar__dropdown-divider" />
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="app-topbar__dropdown-item app-topbar__dropdown-item--danger"
+              >
+                <span>🚪</span>
+                <span>Logout</span>
               </button>
             </div>
           )}

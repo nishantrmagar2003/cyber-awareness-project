@@ -1,4 +1,6 @@
+import React from "react"; // ✅ REQUIRED
 import { Routes, Route, Navigate } from "react-router-dom";
+import RequireOrg from "../app/routeGuards/RequireOrg";
 
 import PublicLayout from "../layouts/PublicLayout";
 import StudentLayout from "../layouts/StudentLayout";
@@ -53,7 +55,6 @@ function AppRoutes() {
         <Route path="/register" element={<RegisterPage />} />
       </Route>
 
-
       {/* STUDENT ROUTES */}
       <Route
         path="/student"
@@ -66,32 +67,18 @@ function AppRoutes() {
         }
       >
         <Route index element={<Navigate to="dashboard" replace />} />
-
         <Route path="dashboard" element={<StudentDashboard />} />
-
         <Route path="modules" element={<Modules />} />
-
         <Route path="module/:id" element={<ModuleDetails />} />
-
         <Route path="topic/:id" element={<TopicDetails />} />
-
         <Route path="video/:id" element={<VideoPlayer />} />
-
         <Route path="quiz/:id" element={<QuizPage />} />
-
-        <Route path="quiz/:id" element={<QuizPage />} />
-
         <Route path="simulation/:id" element={<SimulationPage />} />
-
         <Route path="progress" element={<Progress />} />
-
         <Route path="badges" element={<Badges />} />
-
         <Route path="certificate" element={<Certificate />} />
-
         <Route path="settings" element={<StudentSettings />} />
       </Route>
-
 
       {/* ORGANIZATION ADMIN ROUTES */}
       <Route
@@ -99,24 +86,20 @@ function AppRoutes() {
         element={
           <RequireAuth>
             <RequireRole role="org_admin">
-              <OrgLayout />
+              <RequireOrg>
+                <OrgLayout />
+              </RequireOrg>
             </RequireRole>
           </RequireAuth>
         }
       >
         <Route index element={<Navigate to="dashboard" replace />} />
-
         <Route path="dashboard" element={<OrgDashboard />} />
-
         <Route path="students" element={<Students />} />
-
         <Route path="students/:id" element={<StudentDetails />} />
-
         <Route path="reports" element={<Reports />} />
-
         <Route path="settings" element={<OrgSettings />} />
       </Route>
-
 
       {/* SUPERADMIN ROUTES */}
       <Route
@@ -130,32 +113,20 @@ function AppRoutes() {
         }
       >
         <Route index element={<Navigate to="dashboard" replace />} />
-
         <Route path="dashboard" element={<AdminDashboard />} />
-
         <Route path="organizations" element={<Organizations />} />
-
         <Route path="organizations/:id" element={<OrganizationDetails />} />
-
         <Route path="users" element={<Users />} />
-
         <Route path="modules" element={<ModulesAdmin />} />
-
         <Route path="videos" element={<Videos />} />
-
         <Route path="quizzes" element={<Quizzes />} />
-
         <Route path="simulations" element={<Simulations />} />
-
         <Route path="topics" element={<Topics />} />
-
         <Route path="badges" element={<BadgesAdmin />} />
-
         <Route path="settings" element={<SystemSettings />} />
       </Route>
 
-
-      {/* FALLBACK ROUTE */}
+      {/* FALLBACK */}
       <Route path="*" element={<Navigate to="/" replace />} />
 
     </Routes>

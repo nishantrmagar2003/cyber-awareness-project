@@ -1,11 +1,14 @@
 import { Navigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 export default function RequireAuth({ children }) {
+  const { loading, isAuthenticated } = useAuth();
 
-  const token = localStorage.getItem("token");
+  if (loading) {
+    return <p>Loading...</p>;
+  }
 
-  // if no token -> go to login
-  if (!token) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 

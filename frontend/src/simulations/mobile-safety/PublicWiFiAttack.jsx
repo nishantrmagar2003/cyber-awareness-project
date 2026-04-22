@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const T = {
   en: {
@@ -215,16 +215,28 @@ function FinishScreen({ t, onRetry }) {
   );
 }
 
-export default function PublicWiFiAttack() {
+export default function PublicWiFiAttack({ attemptId, onComplete }) {
   const [lang, setLang]         = useState("en");
   const [phase, setPhase]       = useState("intro");
   const [network, setNetwork]   = useState(null);
   const [activity, setActivity] = useState(null);
   const [outcome, setOutcome]   = useState(null);
   const [finished, setFinished] = useState(false);
+  const [done, setDone]         = useState(false);
+  const startTime               = useRef(Date.now());
   const t = T[lang];
 
-  function reset(nl) { setPhase("intro"); setNetwork(null); setActivity(null); setOutcome(null); setFinished(false); if(nl) setLang(nl); }
+  function handleFinish() {
+    if (done) return;
+    setDone(true);
+    const timeTaken = Math.round((Date.now() - startTime.current) / 1000);
+    if (onComplete) onComplete({
+      answers: { network, activity, outcome },
+      score: outcome === "safe" ? 100 : outcome === "risky" ? 50 : 0,
+      timeTaken,
+    });
+  }
+  function reset(nl) { setPhase("intro"); setNetwork(null); setActivity(null); setOutcome(null); setFinished(false); setDone(false); startTime.current = Date.now(); if(nl) setLang(nl); }
 
   function handleNetwork(n) { setNetwork(n); setPhase("step2"); }
 
@@ -323,7 +335,7 @@ export default function PublicWiFiAttack() {
             <LessonBox lesson={isBad?t.lessonBad:t.lessonGood} isBad={isBad}/>
             <div className="pw-btn-group">
               <button className="pw-btn pw-btn-outline" onClick={()=>reset()}>{t.retryBtn}</button>
-              <button className="pw-btn pw-btn-primary" onClick={()=>setFinished(true)}>{t.finishBtn}</button>
+              <button className="pw-btn pw-btn-primary" onClick={() => handleFinish()}>{t.finishBtn}</button>
             </div>
             {finished && <FinishScreen t={t} onRetry={()=>reset()}/>}
           </div>

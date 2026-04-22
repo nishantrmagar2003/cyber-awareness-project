@@ -1,42 +1,125 @@
 import { useEffect } from "react";
 
-export default function Modal({ isOpen, onClose, title, children, size = "md" }) {
+export default function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  size = "md",
+}) {
   useEffect(() => {
-    const handleKey = (e) => { if (e.key === "Escape") onClose(); };
-    if (isOpen) document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
+    const handleKey = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+
+    if (isOpen) {
+      document.addEventListener("keydown", handleKey);
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      document.body.style.overflow = "";
+    };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
-  const sizeClass = {
-    sm: "max-w-md",
-    md: "max-w-lg",
-    lg: "max-w-2xl",
-    xl: "max-w-4xl",
-  }[size];
+  const maxWidthMap = {
+    sm: "420px",
+    md: "560px",
+    lg: "760px",
+    xl: "980px",
+  };
+
+  const modalWidth = maxWidthMap[size] || maxWidthMap.md;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 9999,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px",
+      }}
+    >
       <div
-        className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
         onClick={onClose}
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: "rgba(15, 23, 42, 0.52)",
+          backdropFilter: "blur(6px)",
+        }}
       />
-      {/* Modal */}
-      <div className={`relative bg-white rounded-2xl shadow-2xl w-full ${sizeClass} animate-fade-in`}>
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
-          <h3 className="text-lg font-semibold text-slate-800">{title}</h3>
+
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          maxWidth: modalWidth,
+          maxHeight: "calc(100vh - 48px)",
+          overflowY: "auto",
+          borderRadius: "24px",
+          background: "linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)",
+          border: "1px solid #dbeafe",
+          boxShadow:
+            "0 24px 60px rgba(15, 23, 42, 0.22), 0 10px 24px rgba(37, 99, 235, 0.12)",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "16px",
+            padding: "20px 24px",
+            borderBottom: "1px solid #e2e8f0",
+          }}
+        >
+          <h3
+            style={{
+              margin: 0,
+              fontSize: "20px",
+              fontWeight: 800,
+              color: "#0f172a",
+              letterSpacing: "-0.02em",
+            }}
+          >
+            {title}
+          </h3>
+
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 text-xl leading-none transition-colors"
+            type="button"
+            aria-label="Close modal"
+            style={{
+              width: "40px",
+              height: "40px",
+              border: "1px solid #dbe3ee",
+              borderRadius: "12px",
+              background: "#ffffff",
+              color: "#64748b",
+              fontSize: "20px",
+              lineHeight: 1,
+              cursor: "pointer",
+              transition: "all 0.18s ease",
+            }}
           >
             ✕
           </button>
         </div>
-        {/* Body */}
-        <div className="px-6 py-5">{children}</div>
+
+        <div
+          style={{
+            padding: "24px",
+          }}
+        >
+          {children}
+        </div>
       </div>
     </div>
   );

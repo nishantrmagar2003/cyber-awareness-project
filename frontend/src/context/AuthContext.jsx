@@ -1,61 +1,159 @@
-import { createContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 export const AuthContext = createContext(null);
 
+/* =========================
+   SAFE HELPERS
+========================= */
+
+function safeParseUser(rawUser) {
+  if (!rawUser) return null;
+  try {
+    return JSON.parse(rawUser);
+  } catch {
+    return null;
+  }
+}
+
+function readStoredAuth() {
+  const token = localStorage.getItem("token");
+  const user = safeParseUser(localStorage.getItem("user"));
+
+  return {
+    token: token || null,
+    user,
+    role: user?.role || null,
+    orgId: user?.organization_id ?? null,
+  };
+}
+
+/* =========================
+   AUTH PROVIDER
+========================= */
+
 function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [role, setRole] = useState(null);
-  const [orgId, setOrgId] = useState(null);
+  const [auth, setAuth] = useState({
+    token: null,
+    user: null,
+    role: null,
+    orgId: null,
+  });
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
+  const [loading, setLoading] = useState(true);
 
-    if (storedToken && storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-
-      setToken(storedToken);
-      setUser(parsedUser);
-      setRole(parsedUser.role);
-      setOrgId(parsedUser.organization_id);
-    }
+  /* =========================
+     SYNC FROM STORAGE
+  ========================= */
+  const syncFromStorage = useCallback(() => {
+    const data = readStoredAuth();
+    setAuth(data);
   }, []);
 
-  const login = (data) => {
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
+  useEffect(() => {
+    syncFromStorage();
+    setLoading(false);
 
-    setToken(data.token);
-    setUser(data.user);
-    setRole(data.user.role);
-    setOrgId(data.user.organization_id);
-  };
+    const onStorage = (event) => {
+      if (!event.key || ["token", "user"].includes(event.key)) {
+        syncFromStorage();
+      }
+    };
 
-  const logout = () => {
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [syncFromStorage]);
+
+  /* =========================
+     LOGIN
+  ========================= */
+  const login = useCallback((payloadOrToken, maybeUser) => {
+    let payload =
+      typeof payloadOrToken === "object" && payloadOrToken !== null
+        ? payloadOrToken
+        : { token: payloadOrToken, user: maybeUser };
+
+    let token = payload?.token;
+    let user = payload?.user;
+
+    // 🔥 Handle different token formats
+    if (typeof token === "object") {
+      token = token.accessToken || token.token || null;
+    }
+
+    if (!token || !user) {
+      console.error("Invalid login payload:", payload);
+      throw new Error("login requires valid token and user");
+    }
+
+    // 🔐 Save to storage
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(user));
+
+    // 🔄 Update state
+    setAuth({
+      token,
+      user,
+      role: user.role || null,
+      orgId: user.organization_id ?? null,
+    });
+  }, []);
+
+  /* =========================
+     LOGOUT
+  ========================= */
+  const logout = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
-    setToken(null);
-    setUser(null);
-    setRole(null);
-    setOrgId(null);
-  };
+    setAuth({
+      token: null,
+      user: null,
+      role: null,
+      orgId: null,
+    });
+  }, []);
+
+  /* =========================
+     CONTEXT VALUE
+  ========================= */
+  const value = useMemo(
+    () => ({
+      ...auth,
+      loading, // ✅ IMPORTANT (for route guards)
+      isAuthenticated: Boolean(auth.token && auth.user),
+      login,
+      logout,
+      refreshAuth: syncFromStorage,
+    }),
+    [auth, loading, login, logout, syncFromStorage]
+  );
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        token,
-        role,
-        orgId,
-        login,
-        logout,
-      }}
-    >
-      {children}
+    <AuthContext.Provider value={value}>
+      {!loading && children}
     </AuthContext.Provider>
   );
+}
+
+/* =========================
+   HOOK
+========================= */
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error("useAuth must be used within AuthProvider");
+  }
+
+  return context;
 }
 
 export default AuthProvider;

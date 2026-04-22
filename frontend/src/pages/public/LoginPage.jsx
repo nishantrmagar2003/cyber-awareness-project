@@ -1,8 +1,9 @@
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import "./LoginPage.css";
 import api from "../../services/api";
-import { normalizeRole } from "../../utils/roles";
+import { useAuth } from "../../context/AuthContext";
 
 const content = {
   en: {
@@ -11,7 +12,11 @@ const content = {
     emailPh: "Email address",
     passPh: "Password",
     loginBtn: "Sign In",
-    regLink: <>Don't have an account? <strong>Create one</strong></>,
+    regLink: (
+      <>
+        Don't have an account? <strong>Create one</strong>
+      </>
+    ),
     errEmail: "Please enter a valid email address.",
     errPass: "Password must be at least 6 characters.",
   },
@@ -21,7 +26,11 @@ const content = {
     emailPh: "इमेल ठेगाना",
     passPh: "पासवर्ड",
     loginBtn: "साइन इन गर्नुहोस्",
-    regLink: <>खाता छैन? <strong>खाता बनाउनुहोस्</strong></>,
+    regLink: (
+      <>
+        खाता छैन? <strong>खाता बनाउनुहोस्</strong>
+      </>
+    ),
     errEmail: "कृपया मान्य इमेल ठेगाना लेख्नुहोस्।",
     errPass: "पासवर्ड कम्तिमा ६ अक्षरको हुनुपर्छ।",
   },
@@ -29,6 +38,8 @@ const content = {
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
+
   const [lang, setLang] = useState("en");
   const t = content[lang];
 
@@ -70,24 +81,27 @@ export default function LoginPage() {
       });
 
       const { token, user } = res.data;
+
       if (!token || !user) {
         throw new Error("Invalid server response");
       }
 
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
+      // 🔐 Save auth
+      login(token, user);
 
-      const role = normalizeRole(user.role);
+      // ✅ DIRECT ROLE (FINAL FIX)
+      const role = user.role;
 
-      if (role === "generaluser" || role === "orgstudent") {
+      if (role === "general_user" || role === "org_student") {
         navigate("/student/dashboard", { replace: true });
-      } else if (role === "orgadmin") {
+      } else if (role === "org_admin") {
         navigate("/organization/dashboard", { replace: true });
       } else if (role === "superadmin") {
         navigate("/superadmin/dashboard", { replace: true });
       } else {
         navigate("/", { replace: true });
       }
+
     } catch (error) {
       const message =
         error?.response?.data?.error ||
@@ -107,8 +121,10 @@ export default function LoginPage() {
   return (
     <div className="login-wrapper">
       <div className="login-card">
+
         <div className="lang-toggle">
           <button
+            type="button"
             className={`lang-btn ${lang === "en" ? "active" : ""}`}
             onClick={() => setLang("en")}
           >
@@ -116,6 +132,7 @@ export default function LoginPage() {
           </button>
 
           <button
+            type="button"
             className={`lang-btn ${lang === "np" ? "active" : ""}`}
             onClick={() => setLang("np")}
           >
@@ -127,6 +144,7 @@ export default function LoginPage() {
         <p className="login-tagline">{t.tagline}</p>
 
         <form className="login-form" onSubmit={handleSubmit} noValidate>
+
           <div className="field-wrap">
             <input
               type="email"
@@ -138,7 +156,6 @@ export default function LoginPage() {
               }}
               className={errors.email ? "input-error" : ""}
             />
-
             {errors.email && <span className="error-msg">{errors.email}</span>}
           </div>
 
@@ -153,7 +170,6 @@ export default function LoginPage() {
               }}
               className={errors.pass ? "input-error" : ""}
             />
-
             {errors.pass && <span className="error-msg">{errors.pass}</span>}
           </div>
 
@@ -165,6 +181,7 @@ export default function LoginPage() {
         <div className="register-link" onClick={() => navigate("/register")}>
           {t.regLink}
         </div>
+
       </div>
     </div>
   );

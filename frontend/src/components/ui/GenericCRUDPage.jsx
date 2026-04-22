@@ -4,6 +4,7 @@ import PageHeader from "./PageHeader";
 import DataTable from "./DataTable";
 import StatusBadge from "./StatusBadge";
 import Modal from "./Modal";
+
 /**
  * GenericCRUDPage — reusable template for Modules / Topics / Videos / Quizzes / Simulations
  * Props:
@@ -12,14 +13,13 @@ import Modal from "./Modal";
  *   apiBase     string  e.g. "/api/modules"
  *   fields      Array<{ key, label, type?, options? }>
  *   mockData    Array<object>
- *   columns     Array<{ key, label, render? }>  (optional override)
  */
 export default function GenericCRUDPage({ title, subtitle, apiBase, fields, mockData }) {
-  const [items, setItems]     = useState(mockData);
-  const [search, setSearch]   = useState("");
-  const [open, setOpen]       = useState(false);
-  const [editing, setEditing] = useState(null); // null = create, object = edit
-  const [form, setForm]       = useState({});
+  const [items, setItems] = useState(mockData);
+  const [search, setSearch] = useState("");
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState({});
 
   const filtered = items.filter((item) =>
     fields.some((f) =>
@@ -27,33 +27,52 @@ export default function GenericCRUDPage({ title, subtitle, apiBase, fields, mock
     )
   );
 
-  const openCreate = () => { setEditing(null); setForm({}); setOpen(true); };
-  const openEdit   = (item) => { setEditing(item); setForm({ ...item }); setOpen(true); };
+  const openCreate = () => {
+    setEditing(null);
+    setForm({});
+    setOpen(true);
+  };
+
+  const openEdit = (item) => {
+    setEditing(item);
+    setForm({ ...item });
+    setOpen(true);
+  };
 
   const handleSave = () => {
     if (editing) {
-      setItems((prev) => prev.map((i) => (i.id === editing.id ? { ...i, ...form } : i)));
-      // axios.put(`${apiBase}/${editing.id}`, form).catch(() => {});
+      setItems((prev) =>
+        prev.map((i) => (i.id === editing.id ? { ...i, ...form } : i))
+      );
     } else {
-      const newItem = { id: Date.now(), ...form, status: "Active", created: new Date().toISOString().split("T")[0] };
+      const newItem = {
+        id: Date.now(),
+        ...form,
+        status: "Active",
+        created: new Date().toISOString().split("T")[0],
+      };
       setItems((prev) => [newItem, ...prev]);
-      // axios.post(apiBase, form).catch(() => {});
     }
+
     setOpen(false);
   };
 
   const handleDelete = (id) => {
     if (!window.confirm("Delete this item?")) return;
     setItems((prev) => prev.filter((i) => i.id !== id));
-    // axios.delete(`${apiBase}/${id}`).catch(() => {});
   };
 
   const columns = [
     ...fields.slice(0, 3).map((f) => ({ key: f.key, label: f.label })),
-    { key: "status",  label: "Status",  render: (r) => <StatusBadge status={r.status || "Active"} /> },
+    {
+      key: "status",
+      label: "Status",
+      render: (r) => <StatusBadge status={r.status || "Active"} />,
+    },
     { key: "created", label: "Created" },
     {
-      key: "actions", label: "Actions",
+      key: "actions",
+      label: "Actions",
       render: (r) => (
         <div className="flex items-center gap-2">
           <button
@@ -89,6 +108,10 @@ export default function GenericCRUDPage({ title, subtitle, apiBase, fields, mock
       />
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          Demo mode: this management page is currently using mock data and is not yet connected to the backend.
+        </div>
+
         <div className="mb-5">
           <input
             type="text"
@@ -98,18 +121,30 @@ export default function GenericCRUDPage({ title, subtitle, apiBase, fields, mock
             className="w-full sm:w-80 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
           />
         </div>
-        <DataTable columns={columns} data={filtered} emptyMessage={`No ${title.toLowerCase()} found.`} />
+
+        <DataTable
+          columns={columns}
+          data={filtered}
+          emptyMessage={`No ${title.toLowerCase()} found.`}
+        />
       </div>
 
       <Modal
         isOpen={open}
         onClose={() => setOpen(false)}
-        title={editing ? `Edit ${title.replace(" Management", "")}` : `Create ${title.replace(" Management", "")}`}
+        title={
+          editing
+            ? `Edit ${title.replace(" Management", "")}`
+            : `Create ${title.replace(" Management", "")}`
+        }
       >
         <div className="space-y-4">
           {fields.map(({ key, label, type = "text", options }) => (
             <div key={key}>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">{label}</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                {label}
+              </label>
+
               {options ? (
                 <select
                   value={form[key] || ""}
@@ -117,7 +152,9 @@ export default function GenericCRUDPage({ title, subtitle, apiBase, fields, mock
                   className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400 transition-all"
                 >
                   <option value="">Select {label}</option>
-                  {options.map((o) => <option key={o}>{o}</option>)}
+                  {options.map((o) => (
+                    <option key={o}>{o}</option>
+                  ))}
                 </select>
               ) : type === "textarea" ? (
                 <textarea
@@ -138,6 +175,7 @@ export default function GenericCRUDPage({ title, subtitle, apiBase, fields, mock
               )}
             </div>
           ))}
+
           <div className="flex gap-3 pt-2">
             <button
               onClick={handleSave}

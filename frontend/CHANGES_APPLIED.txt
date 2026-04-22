@@ -1,0 +1,7 @@
+Applied fixes:
+- Fixed dashboard module navigation to /student/module/:id
+- Improved ModuleDetails continue-learning behavior
+- Preserved topic list with lock/completed states
+- Improved TopicDetails to require quiz completion before simulations
+- Added TopicDetails auto-resume when quiz was completed
+- Improved QuizPage with submit protection, answer persistence, quiz completion redirect

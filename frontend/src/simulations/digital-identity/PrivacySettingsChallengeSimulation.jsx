@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 /* ── Translations ─────────────────────────────────── */
 const T = {
@@ -418,9 +418,11 @@ function ScoreCircle({ score }) {
 }
 
 /* ── Main component ───────────────────────────────── */
-export default function PrivacySettingsChallenge() {
+export default function PrivacySettingsChallengeSimulation({ attemptId, onComplete }) {
   const [lang, setLang]   = useState("en");
   const [activeTab, setActiveTab] = useState(0);
+  const [done, setDone]   = useState(false);
+  const startTime         = useRef(Date.now());
   const t = T[lang];
 
   // Collect all settings from all tabs
@@ -455,6 +457,24 @@ export default function PrivacySettingsChallenge() {
     const fixed = {};
     allSettings.forEach(s => { fixed[s.id] = s.safeIndex; });
     setValues(fixed);
+  }
+
+  function handleFinish() {
+    setDone(true);
+    const timeTaken = Math.round((Date.now() - startTime.current) / 1000);
+    if (onComplete) {
+      onComplete({
+        answers: {
+          score,
+          settingsState:   values,
+          safeCount,
+          totalSettings,
+          unsafeRemaining: unsafeSettings.length,
+        },
+        score,
+        timeTaken,
+      });
+    }
   }
 
   const currentTabData = allTabSettings[activeTab];
@@ -600,8 +620,25 @@ export default function PrivacySettingsChallenge() {
                 </div>
               )}
 
-              <div className="psc-nav-row">
+              <div className="psc-nav-row" style={{ flexDirection: "column", gap: 10 }}>
                 <button className="psc-nav-btn" onClick={() => setActiveTab(2)}>{t.prevTab}</button>
+                {!done ? (
+                  <button
+                    className="psc-nav-btn psc-nav-next"
+                    style={{ background: "#22c55e", color: "#fff", border: "none" }}
+                    onClick={handleFinish}
+                  >
+                    {lang === "np" ? "✅ सिमुलेसन सम्पन्न गर्नुहोस्" : "✅ Finish Simulation"}
+                  </button>
+                ) : (
+                  <div style={{
+                    padding: "12px", textAlign: "center", background: "#f0fdf4",
+                    border: "1.5px solid #86efac", borderRadius: 10,
+                    color: "#166534", fontWeight: 700, fontSize: 14,
+                  }}>
+                    {lang === "np" ? "🎉 प्रगति सुरक्षित गरिँदैछ…" : "🎉 Saving your progress…"}
+                  </div>
+                )}
               </div>
             </div>
           )}

@@ -1,244 +1,274 @@
 [
-    {
-      "id": 1,
-      "question_en": "You create the password 'Nepal@123'. Why is it weak?",
-      "question_np": "तपाईंले 'Nepal@123' पासवर्ड बनाउनुभयो। यो किन कमजोर हो?",
-      "options_en": ["It is too long", "It uses predictable words", "It has symbols", "It is secure"],
-      "options_np": ["यो धेरै लामो छ", "यसमा सजिलै अनुमान गर्न सकिने शब्द छन्", "यसमा चिन्ह छन्", "यो सुरक्षित छ"],
-      "correct": 1
-    },
-    {
-      "id": 2,
-      "question_en": "Attackers reuse your password on multiple sites. What is this called?",
-      "question_np": "ह्याकरहरूले तपाईंको पासवर्ड अन्य साइटहरूमा प्रयोग गर्छन्। यसलाई के भनिन्छ?",
-      "options_en": ["Phishing", "Credential stuffing", "Malware", "Brute force"],
-      "options_np": ["फिसिङ", "क्रेडेन्सियल स्टफिङ", "मालवेयर", "ब्रुट फोर्स"],
-      "correct": 1
-    },
-    {
-      "id": 3,
-      "question_en": "Which practice improves password security?",
-      "question_np": "कुन अभ्यासले पासवर्ड सुरक्षा सुधार गर्छ?",
-      "options_en": ["Short passwords", "Common words", "Long complex passwords", "Sharing passwords"],
-      "options_np": ["छोटो पासवर्ड", "साधारण शब्द", "लामो जटिल पासवर्ड", "पासवर्ड साझा गर्ने"],
-      "correct": 2
-    },
-    {
-      "id": 4,
-      "question_en": "Writing passwords on paper is risky because?",
-      "question_np": "कागजमा पासवर्ड लेख्नु किन जोखिमपूर्ण हुन्छ?",
-      "options_en": ["Faster login", "Physical theft risk", "Encryption", "Security increase"],
-      "options_np": ["छिटो लगइन", "चोरी हुने जोखिम", "इन्क्रिप्सन", "सुरक्षा बढ्छ"],
-      "correct": 1
-    },
-    {
-      "id": 5,
-      "question_en": "What does 2FA provide?",
-      "question_np": "2FA ले के प्रदान गर्छ?",
-      "options_en": ["Faster login", "Extra security layer", "Removes password", "Deletes account"],
-      "options_np": ["छिटो लगइन", "अतिरिक्त सुरक्षा तह", "पासवर्ड हटाउँछ", "खाता मेटाउँछ"],
-      "correct": 1
-    },
-    {
-      "id": 6,
-      "question_en": "You receive an OTP without login attempt. What should you do?",
-      "question_np": "OTP आयो तर तपाईंले लगइन गर्नुभएको छैन भने के गर्नु पर्छ?",
-      "options_en": ["Use it", "Share it", "Ignore and secure account", "Save it"],
-      "options_np": ["प्रयोग गर्ने", "साझा गर्ने", "बेवास्ता गरी खाता सुरक्षित गर्ने", "सेभ गर्ने"],
-      "correct": 2
-    },
-    {
-      "id": 7,
-      "question_en": "Why is SMS 2FA less secure?",
-      "question_np": "SMS 2FA किन कम सुरक्षित हुन्छ?",
-      "options_en": ["Too slow", "Can be intercepted", "Too strong", "Too fast"],
-      "options_np": ["ढिलो छ", "बीचमा अवरोध गर्न सकिन्छ", "धेरै बलियो", "धेरै छिटो"],
-      "correct": 1
-    },
-    {
-      "id": 8,
-      "question_en": "Sharing personal info online can lead to?",
-      "question_np": "व्यक्तिगत जानकारी शेयर गर्दा के जोखिम हुन्छ?",
-      "options_en": ["Better speed", "Identity theft", "More likes", "Free services"],
-      "options_np": ["छिटो इन्टरनेट", "पहिचान चोरी", "धेरै लाइक", "निःशुल्क सेवा"],
-      "correct": 1
-    },
-    {
-      "id": 9,
-      "question_en": "A stranger asks your data for a prize. What is this?",
-      "question_np": "अपरिचित व्यक्तिले पुरस्कार भन्दै डेटा माग्छ। यो के हो?",
-      "options_en": ["Update", "Phishing", "Security", "Backup"],
-      "options_np": ["अपडेट", "फिसिङ", "सुरक्षा", "ब्याकअप"],
-      "correct": 1
-    },
-    {
-      "id": 10,
-      "question_en": "Best way to protect identity?",
-      "question_np": "डिजिटल पहिचान जोगाउने राम्रो तरिका के हो?",
-      "options_en": ["Share info", "Use privacy settings", "Accept all", "Post data"],
-      "options_np": ["जानकारी शेयर गर्ने", "प्राइभेसी सेटिङ प्रयोग गर्ने", "सबैलाई स्वीकार गर्ने", "डेटा पोस्ट गर्ने"],
-      "correct": 1
-    },
-  
-    {
-      "id": 11,
-      "question_en": "Email says urgent action required. What should you do?",
-      "question_np": "तत्काल कार्य आवश्यक भन्ने इमेल आयो भने के गर्ने?",
-      "options_en": ["Click fast", "Verify sender", "Ignore security", "Share info"],
-      "options_np": ["छिटो क्लिक गर्ने", "प्रेषक जाँच गर्ने", "सुरक्षा बेवास्ता गर्ने", "जानकारी दिने"],
-      "correct": 1
-    },
-    {
-      "id": 12,
-      "question_en": "Which domain looks suspicious?",
-      "question_np": "कुन डोमेन शंकास्पद छ?",
-      "options_en": ["bank.com", "secure-bank.xyz", "google.com", "amazon.com"],
-      "options_np": ["bank.com", "secure-bank.xyz", "google.com", "amazon.com"],
-      "correct": 1
-    },
-    {
-      "id": 13,
-      "question_en": "Main phishing sign?",
-      "question_np": "फिसिङको मुख्य संकेत के हो?",
-      "options_en": ["Urgency", "Clear info", "Secure link", "Verified sender"],
-      "options_np": ["आकस्मिकता", "स्पष्ट जानकारी", "सुरक्षित लिंक", "प्रमाणित प्रेषक"],
-      "correct": 0
-    },
-    {
-      "id": 14,
-      "question_en": "Fake login page – what to check?",
-      "question_np": "नक्कली लगइन पेजमा के जाँच गर्ने?",
-      "options_en": ["Color", "URL", "Font", "Size"],
-      "options_np": ["रंग", "URL", "फन्ट", "आकार"],
-      "correct": 1
-    },
-    {
-      "id": 15,
-      "question_en": "Before scanning QR code?",
-      "question_np": "QR स्क्यान गर्नु अघि?",
-      "options_en": ["Scan", "Verify source", "Share", "Ignore"],
-      "options_np": ["स्क्यान गर्ने", "स्रोत जाँच गर्ने", "साझा गर्ने", "बेवास्ता गर्ने"],
-      "correct": 1
-    },
-    {
-      "id": 16,
-      "question_en": "Scan to receive money scam risk?",
-      "question_np": "पैसा पाउन स्क्यान स्क्यामको जोखिम?",
-      "options_en": ["Gain money", "Lose money", "Nothing", "Faster"],
-      "options_np": ["पैसा पाउने", "पैसा गुमाउने", "केहि हुँदैन", "छिटो हुन्छ"],
-      "correct": 1
-    },
-    {
-      "id": 17,
-      "question_en": "Secure website sign?",
-      "question_np": "सुरक्षित वेबसाइट संकेत?",
-      "options_en": ["http", "https", "ads", "images"],
-      "options_np": ["http", "https", "विज्ञापन", "चित्र"],
-      "correct": 1
-    },
-    {
-      "id": 18,
-      "question_en": "Fake websites are used to?",
-      "question_np": "नक्कली वेबसाइट किन बनाइन्छ?",
-      "options_en": ["Improve speed", "Steal data", "Protect users", "Upgrade system"],
-      "options_np": ["गति बढाउन", "डेटा चोरी गर्न", "प्रयोगकर्ता बचाउन", "अपग्रेड गर्न"],
-      "correct": 1
-    },
-    {
-      "id": 19,
-      "question_en": "Before entering data online?",
-      "question_np": "डेटा हाल्नु अघि?",
-      "options_en": ["Check domain", "Ignore URL", "Share fast", "Close page"],
-      "options_np": ["डोमेन जाँच गर्ने", "URL बेवास्ता गर्ने", "छिटो दिने", "पेज बन्द गर्ने"],
-      "correct": 0
-    },
-    {
-      "id": 20,
-      "question_en": "Safe app install?",
-      "question_np": "सुरक्षित एप इन्स्टल?",
-      "options_en": ["Unknown site", "Official store", "Random link", "USB"],
-      "options_np": ["अज्ञात साइट", "अफिसियल स्टोर", "र्यान्डम लिंक", "USB"],
-      "correct": 1
-    },
-  
-    {
-      "id": 21,
-      "question_en": "Why lock phone?",
-      "question_np": "फोन लक किन?",
-      "options_en": ["Battery", "Security", "Speed", "Storage"],
-      "options_np": ["ब्याट्री", "सुरक्षा", "गति", "स्टोरेज"],
-      "correct": 1
-    },
-    {
-      "id": 22,
-      "question_en": "App asks extra permissions?",
-      "question_np": "एपले अतिरिक्त अनुमति माग्यो भने?",
-      "options_en": ["Allow all", "Deny unnecessary", "Ignore", "Share"],
-      "options_np": ["सबै अनुमति दिने", "अनावश्यक अस्वीकार गर्ने", "बेवास्ता गर्ने", "साझा गर्ने"],
-      "correct": 1
-    },
-    {
-      "id": 23,
-      "question_en": "Public WiFi risk?",
-      "question_np": "सार्वजनिक WiFi जोखिम?",
-      "options_en": ["Fast", "Data theft", "Secure", "Free"],
-      "options_np": ["छिटो", "डेटा चोरी", "सुरक्षित", "निःशुल्क"],
-      "correct": 1
-    },
-    {
-      "id": 24,
-      "question_en": "Safe app source?",
-      "question_np": "सुरक्षित एप स्रोत?",
-      "options_en": ["Random", "Official store", "USB", "Unknown"],
-      "options_np": ["र्यान्डम", "अफिसियल स्टोर", "USB", "अज्ञात"],
-      "correct": 1
-    },
-    {
-      "id": 25,
-      "question_en": "Cyberbullying means?",
-      "question_np": "साइबरबुलिङ के हो?",
-      "options_en": ["Helping", "Harassment", "Sharing", "Posting"],
-      "options_np": ["सहयोग", "उत्पीडन", "साझा गर्ने", "पोस्ट गर्ने"],
-      "correct": 1
-    },
-    {
-      "id": 26,
-      "question_en": "Best response to bullying?",
-      "question_np": "साइबरबुलिङमा सही प्रतिक्रिया?",
-      "options_en": ["Fight", "Report/block", "Ignore forever", "Share"],
-      "options_np": ["लड्ने", "रिपोर्ट/ब्लक गर्ने", "सधैं बेवास्ता गर्ने", "साझा गर्ने"],
-      "correct": 1
-    },
-    {
-      "id": 27,
-      "question_en": "Suspicious office email?",
-      "question_np": "शंकास्पद अफिस इमेल?",
-      "options_en": ["Send data", "Verify sender", "Ignore rules", "Share"],
-      "options_np": ["डेटा पठाउने", "प्रेषक जाँच गर्ने", "नियम बेवास्ता गर्ने", "साझा गर्ने"],
-      "correct": 1
-    },
-    {
-      "id": 28,
-      "question_en": "Unknown USB?",
-      "question_np": "अज्ञात USB?",
-      "options_en": ["Use it", "Give to IT", "Take home", "Share"],
-      "options_np": ["प्रयोग गर्ने", "IT लाई दिने", "घर लैजाने", "साझा गर्ने"],
-      "correct": 1
-    },
-    {
-      "id": 29,
-      "question_en": "Why protect company data?",
-      "question_np": "कम्पनी डेटा किन सुरक्षित?",
-      "options_en": ["Speed", "Prevent breach", "Ads", "Updates"],
-      "options_np": ["गति", "डेटा चुहावट रोक्न", "विज्ञापन", "अपडेट"],
-      "correct": 1
-    },
-    {
-      "id": 30,
-      "question_en": "Best workplace security habit?",
-      "question_np": "कार्यस्थल सुरक्षा अभ्यास?",
-      "options_en": ["Share passwords", "Report threats", "Ignore issues", "Reuse passwords"],
-      "options_np": ["पासवर्ड साझा गर्ने", "खतरा रिपोर्ट गर्ने", "समस्या बेवास्ता गर्ने", "पासवर्ड दोहोर्याउने"],
-      "correct": 1
-    }
-  ]
+  {
+    "id": 1,
+    "module": 1,
+    "question_en": "You create the password 'Nepal@123'. Why is it weak?",
+    "question_np": "तपाईंले 'Nepal@123' पासवर्ड बनाउनुभयो। यो किन कमजोर हो?",
+    "options_en": ["It is too long", "It uses predictable words", "It has symbols", "It is secure"],
+    "options_np": ["यो धेरै लामो छ", "यसमा सजिलै अनुमान गर्न सकिने शब्द छन्", "यसमा चिन्ह छन्", "यो सुरक्षित छ"],
+    "correct": 1
+  },
+  {
+    "id": 2,
+    "module": 1,
+    "question_en": "Attackers reuse your password on multiple sites. What is this called?",
+    "question_np": "ह्याकरहरूले तपाईंको पासवर्ड अन्य साइटहरूमा प्रयोग गर्छन्। यसलाई के भनिन्छ?",
+    "options_en": ["Phishing", "Credential stuffing", "Malware", "Brute force"],
+    "options_np": ["फिसिङ", "क्रेडेन्सियल स्टफिङ", "मालवेयर", "ब्रुट फोर्स"],
+    "correct": 1
+  },
+  {
+    "id": 3,
+    "module": 1,
+    "question_en": "Which practice improves password security?",
+    "question_np": "कुन अभ्यासले पासवर्ड सुरक्षा सुधार गर्छ?",
+    "options_en": ["Short passwords", "Common words", "Long complex passwords", "Sharing passwords"],
+    "options_np": ["छोटो पासवर्ड", "साधारण शब्द", "लामो जटिल पासवर्ड", "पासवर्ड साझा गर्ने"],
+    "correct": 2
+  },
+  {
+    "id": 4,
+    "module": 1,
+    "question_en": "Writing passwords on paper is risky because?",
+    "question_np": "कागजमा पासवर्ड लेख्नु किन जोखिमपूर्ण हुन्छ?",
+    "options_en": ["Faster login", "Physical theft risk", "Encryption", "Security increase"],
+    "options_np": ["छिटो लगइन", "चोरी हुने जोखिम", "इन्क्रिप्सन", "सुरक्षा बढ्छ"],
+    "correct": 1
+  },
+  {
+    "id": 5,
+    "module": 1,
+    "question_en": "What does 2FA provide?",
+    "question_np": "2FA ले के प्रदान गर्छ?",
+    "options_en": ["Faster login", "Extra security layer", "Removes password", "Deletes account"],
+    "options_np": ["छिटो लगइन", "अतिरिक्त सुरक्षा तह", "पासवर्ड हटाउँछ", "खाता मेटाउँछ"],
+    "correct": 1
+  },
+  {
+    "id": 6,
+    "module": 1,
+    "question_en": "You receive an OTP without login attempt. What should you do?",
+    "question_np": "OTP आयो तर तपाईंले लगइन गर्नुभएको छैन भने के गर्नु पर्छ?",
+    "options_en": ["Use it", "Share it", "Ignore and secure account", "Save it"],
+    "options_np": ["प्रयोग गर्ने", "साझा गर्ने", "बेवास्ता गरी खाता सुरक्षित गर्ने", "सेभ गर्ने"],
+    "correct": 2
+  },
+  {
+    "id": 7,
+    "module": 1,
+    "question_en": "Why is SMS 2FA less secure?",
+    "question_np": "SMS 2FA किन कम सुरक्षित हुन्छ?",
+    "options_en": ["Too slow", "Can be intercepted", "Too strong", "Too fast"],
+    "options_np": ["ढिलो छ", "बीचमा अवरोध गर्न सकिन्छ", "धेरै बलियो", "धेरै छिटो"],
+    "correct": 1
+  },
+  {
+    "id": 8,
+    "module": 1,
+    "question_en": "Sharing personal info online can lead to?",
+    "question_np": "व्यक्तिगत जानकारी शेयर गर्दा के जोखिम हुन्छ?",
+    "options_en": ["Better speed", "Identity theft", "More likes", "Free services"],
+    "options_np": ["छिटो इन्टरनेट", "पहिचान चोरी", "धेरै लाइक", "निःशुल्क सेवा"],
+    "correct": 1
+  },
+  {
+    "id": 9,
+    "module": 1,
+    "question_en": "A stranger asks your data for a prize. What is this?",
+    "question_np": "अपरिचित व्यक्तिले पुरस्कार भन्दै डेटा माग्छ। यो के हो?",
+    "options_en": ["Update", "Phishing", "Security", "Backup"],
+    "options_np": ["अपडेट", "फिसिङ", "सुरक्षा", "ब्याकअप"],
+    "correct": 1
+  },
+  {
+    "id": 10,
+    "module": 1,
+    "question_en": "Best way to protect identity?",
+    "question_np": "डिजिटल पहिचान जोगाउने राम्रो तरिका के हो?",
+    "options_en": ["Share info", "Use privacy settings", "Accept all", "Post data"],
+    "options_np": ["जानकारी शेयर गर्ने", "प्राइभेसी सेटिङ प्रयोग गर्ने", "सबैलाई स्वीकार गर्ने", "डेटा पोस्ट गर्ने"],
+    "correct": 1
+  },
+
+  {
+    "id": 11,
+    "module": 2,
+    "question_en": "Email says urgent action required. What should you do?",
+    "question_np": "तत्काल कार्य आवश्यक भन्ने इमेल आयो भने के गर्ने?",
+    "options_en": ["Click fast", "Verify sender", "Ignore security", "Share info"],
+    "options_np": ["छिटो क्लिक गर्ने", "प्रेषक जाँच गर्ने", "सुरक्षा बेवास्ता गर्ने", "जानकारी दिने"],
+    "correct": 1
+  },
+  {
+    "id": 12,
+    "module": 2,
+    "question_en": "Which domain looks suspicious?",
+    "question_np": "कुन डोमेन शंकास्पद छ?",
+    "options_en": ["bank.com", "secure-bank.xyz", "google.com", "amazon.com"],
+    "options_np": ["bank.com", "secure-bank.xyz", "google.com", "amazon.com"],
+    "correct": 1
+  },
+  {
+    "id": 13,
+    "module": 2,
+    "question_en": "Main phishing sign?",
+    "question_np": "फिसिङको मुख्य संकेत के हो?",
+    "options_en": ["Urgency", "Clear info", "Secure link", "Verified sender"],
+    "options_np": ["आकस्मिकता", "स्पष्ट जानकारी", "सुरक्षित लिंक", "प्रमाणित प्रेषक"],
+    "correct": 0
+  },
+  {
+    "id": 14,
+    "module": 2,
+    "question_en": "Fake login page – what to check?",
+    "question_np": "नक्कली लगइन पेजमा के जाँच गर्ने?",
+    "options_en": ["Color", "URL", "Font", "Size"],
+    "options_np": ["रंग", "URL", "फन्ट", "आकार"],
+    "correct": 1
+  },
+  {
+    "id": 15,
+    "module": 2,
+    "question_en": "Before scanning QR code?",
+    "question_np": "QR स्क्यान गर्नु अघि?",
+    "options_en": ["Scan", "Verify source", "Share", "Ignore"],
+    "options_np": ["स्क्यान गर्ने", "स्रोत जाँच गर्ने", "साझा गर्ने", "बेवास्ता गर्ने"],
+    "correct": 1
+  },
+  {
+    "id": 16,
+    "module": 2,
+    "question_en": "Scan to receive money scam risk?",
+    "question_np": "पैसा पाउन स्क्यान स्क्यामको जोखिम?",
+    "options_en": ["Gain money", "Lose money", "Nothing", "Faster"],
+    "options_np": ["पैसा पाउने", "पैसा गुमाउने", "केहि हुँदैन", "छिटो हुन्छ"],
+    "correct": 1
+  },
+  {
+    "id": 17,
+    "module": 2,
+    "question_en": "Secure website sign?",
+    "question_np": "सुरक्षित वेबसाइट संकेत?",
+    "options_en": ["http", "https", "ads", "images"],
+    "options_np": ["http", "https", "विज्ञापन", "चित्र"],
+    "correct": 1
+  },
+  {
+    "id": 18,
+    "module": 2,
+    "question_en": "Fake websites are used to?",
+    "question_np": "नक्कली वेबसाइट किन बनाइन्छ?",
+    "options_en": ["Improve speed", "Steal data", "Protect users", "Upgrade system"],
+    "options_np": ["गति बढाउन", "डेटा चोरी गर्न", "प्रयोगकर्ता बचाउन", "अपग्रेड गर्न"],
+    "correct": 1
+  },
+  {
+    "id": 19,
+    "module": 2,
+    "question_en": "Before entering data online?",
+    "question_np": "डेटा हाल्नु अघि?",
+    "options_en": ["Check domain", "Ignore URL", "Share fast", "Close page"],
+    "options_np": ["डोमेन जाँच गर्ने", "URL बेवास्ता गर्ने", "छिटो दिने", "पेज बन्द गर्ने"],
+    "correct": 0
+  },
+  {
+    "id": 20,
+    "module": 2,
+    "question_en": "Safe app install?",
+    "question_np": "सुरक्षित एप इन्स्टल?",
+    "options_en": ["Unknown site", "Official store", "Random link", "USB"],
+    "options_np": ["अज्ञात साइट", "अफिसियल स्टोर", "र्यान्डम लिंक", "USB"],
+    "correct": 1
+  },
+
+  {
+    "id": 21,
+    "module": 3,
+    "question_en": "Why lock phone?",
+    "question_np": "फोन लक किन?",
+    "options_en": ["Battery", "Security", "Speed", "Storage"],
+    "options_np": ["ब्याट्री", "सुरक्षा", "गति", "स्टोरेज"],
+    "correct": 1
+  },
+  {
+    "id": 22,
+    "module": 3,
+    "question_en": "App asks extra permissions?",
+    "question_np": "एपले अतिरिक्त अनुमति माग्यो भने?",
+    "options_en": ["Allow all", "Deny unnecessary", "Ignore", "Share"],
+    "options_np": ["सबै अनुमति दिने", "अनावश्यक अस्वीकार गर्ने", "बेवास्ता गर्ने", "साझा गर्ने"],
+    "correct": 1
+  },
+  {
+    "id": 23,
+    "module": 3,
+    "question_en": "Public WiFi risk?",
+    "question_np": "सार्वजनिक WiFi जोखिम?",
+    "options_en": ["Fast", "Data theft", "Secure", "Free"],
+    "options_np": ["छिटो", "डेटा चोरी", "सुरक्षित", "निःशुल्क"],
+    "correct": 1
+  },
+  {
+    "id": 24,
+    "module": 3,
+    "question_en": "Safe app source?",
+    "question_np": "सुरक्षित एप स्रोत?",
+    "options_en": ["Random", "Official store", "USB", "Unknown"],
+    "options_np": ["र्यान्डम", "अफिसियल स्टोर", "USB", "अज्ञात"],
+    "correct": 1
+  },
+  {
+    "id": 25,
+    "module": 3,
+    "question_en": "Cyberbullying means?",
+    "question_np": "साइबरबुलिङ के हो?",
+    "options_en": ["Helping", "Harassment", "Sharing", "Posting"],
+    "options_np": ["सहयोग", "उत्पीडन", "साझा गर्ने", "पोस्ट गर्ने"],
+    "correct": 1
+  },
+  {
+    "id": 26,
+    "module": 3,
+    "question_en": "Best response to bullying?",
+    "question_np": "साइबरबुलिङमा सही प्रतिक्रिया?",
+    "options_en": ["Fight", "Report/block", "Ignore forever", "Share"],
+    "options_np": ["लड्ने", "रिपोर्ट/ब्लक गर्ने", "सधैं बेवास्ता गर्ने", "साझा गर्ने"],
+    "correct": 1
+  },
+  {
+    "id": 27,
+    "module": 3,
+    "question_en": "Suspicious office email?",
+    "question_np": "शंकास्पद अफिस इमेल?",
+    "options_en": ["Send data", "Verify sender", "Ignore rules", "Share"],
+    "options_np": ["डेटा पठाउने", "प्रेषक जाँच गर्ने", "नियम बेवास्ता गर्ने", "साझा गर्ने"],
+    "correct": 1
+  },
+  {
+    "id": 28,
+    "module": 3,
+    "question_en": "Unknown USB?",
+    "question_np": "अज्ञात USB?",
+    "options_en": ["Use it", "Give to IT", "Take home", "Share"],
+    "options_np": ["प्रयोग गर्ने", "IT लाई दिने", "घर लैजाने", "साझा गर्ने"],
+    "correct": 1
+  },
+  {
+    "id": 29,
+    "module": 3,
+    "question_en": "Why protect company data?",
+    "question_np": "कम्पनी डेटा किन सुरक्षित?",
+    "options_en": ["Speed", "Prevent breach", "Ads", "Updates"],
+    "options_np": ["गति", "डेटा चुहावट रोक्न", "विज्ञापन", "अपडेट"],
+    "correct": 1
+  },
+  {
+    "id": 30,
+    "module": 3,
+    "question_en": "Best workplace security habit?",
+    "question_np": "कार्यस्थल सुरक्षा अभ्यास?",
+    "options_en": ["Share passwords", "Report threats", "Ignore issues", "Reuse passwords"],
+    "options_np": ["पासवर्ड साझा गर्ने", "खतरा रिपोर्ट गर्ने", "समस्या बेवास्ता गर्ने", "पासवर्ड दोहोर्याउने"],
+    "correct": 1
+  }
+]

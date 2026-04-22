@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 /* ── Translations ─────────────────────────────────── */
 const T = {
@@ -218,7 +218,7 @@ function URLBar({ t, shake }) {
 }
 
 /* ── Main Component ───────────────────────────────── */
-export default function FakeLoginTrap() {
+export default function FakeLoginTrap({ attemptId, onComplete }) {
   const [lang, setLang]     = useState("en");
   const [phase, setPhase]   = useState("email");    // email | warned | fakepage | caught | escaped
   const [email, setEmail]   = useState("");
@@ -226,6 +226,7 @@ export default function FakeLoginTrap() {
   const [showPass, setShowPass] = useState(false);
   const [shakeUrl, setShakeUrl] = useState(false);
   const [finished, setFinished] = useState(false);
+  const startTime               = useRef(Date.now());
   const t = T[lang];
 
   function resetAll(newLang) {
@@ -235,7 +236,18 @@ export default function FakeLoginTrap() {
     setShowPass(false);
     setShakeUrl(false);
     setFinished(false);
+    startTime.current = Date.now();
     if (newLang) setLang(newLang);
+  }
+
+  function handleFinish(outcome) {
+    setFinished(true);
+    const timeTaken = Math.round((Date.now() - startTime.current) / 1000);
+    if (onComplete) onComplete({
+      answers: { outcome },
+      score:     outcome === "escaped" ? 100 : outcome === "warned" ? 75 : 0,
+      timeTaken,
+    });
   }
 
   function handleClickLink() {
@@ -319,7 +331,7 @@ export default function FakeLoginTrap() {
             <div className="fl-url-tip">{t.urlTip}</div>
             <div className="fl-btn-group">
               <button className="fl-btn fl-btn-outline" onClick={handleTryAnyway}>{t.tryAnywayBtn}</button>
-              <button className="fl-btn fl-btn-primary" onClick={() => setFinished(true)}>{t.finishBtn}</button>
+              <button className="fl-btn fl-btn-primary" onClick={() => handleFinish("warned")}>{t.finishBtn}</button>
             </div>
             {finished && <FinishScreen t={t} onRetry={() => resetAll()} />}
           </div>
@@ -393,7 +405,7 @@ export default function FakeLoginTrap() {
 
             <div className="fl-btn-group">
               <button className="fl-btn fl-btn-outline" onClick={() => resetAll()}>{t.retryBtn}</button>
-              <button className="fl-btn fl-btn-primary" onClick={() => setFinished(true)}>{t.finishBtn}</button>
+              <button className="fl-btn fl-btn-primary" onClick={() => handleFinish("caught")}>{t.finishBtn}</button>
             </div>
             {finished && <FinishScreen t={t} onRetry={() => resetAll()} />}
           </div>
@@ -417,7 +429,7 @@ export default function FakeLoginTrap() {
 
             <div className="fl-btn-group">
               <button className="fl-btn fl-btn-outline" onClick={() => resetAll()}>{t.retryBtn}</button>
-              <button className="fl-btn fl-btn-primary" onClick={() => setFinished(true)}>{t.finishBtn}</button>
+              <button className="fl-btn fl-btn-primary" onClick={() => handleFinish("escaped")}>{t.finishBtn}</button>
             </div>
             {finished && <FinishScreen t={t} onRetry={() => resetAll()} />}
           </div>

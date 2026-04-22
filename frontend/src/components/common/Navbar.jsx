@@ -1,3 +1,4 @@
+import React from "react";
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -46,10 +47,6 @@ export default function Navbar() {
       </div>
 
       <div className="student-topbar__actions">
-        <button className="student-topbar__notification" type="button" aria-label="Notifications">
-          🔔
-        </button>
-
         <div className="student-topbar__profile-wrap">
           <button
             type="button"
@@ -68,9 +65,15 @@ export default function Navbar() {
 
           {open && (
             <div className="student-topbar__dropdown">
-              <button type="button" onClick={() => navigate("/student/settings")}>Settings</button>
-              <button type="button" onClick={() => navigate("/student/certificate")}>Certificate</button>
-              <button type="button" onClick={handleLogout}>Logout</button>
+              <button type="button" onClick={() => navigate("/student/settings")}>
+                Settings
+              </button>
+              <button type="button" onClick={() => navigate("/student/certificate")}>
+                Certificate
+              </button>
+              <button type="button" onClick={handleLogout}>
+                Logout
+              </button>
             </div>
           )}
         </div>

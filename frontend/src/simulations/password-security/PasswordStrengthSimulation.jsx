@@ -359,12 +359,14 @@ function analyzePassword(pwd, lang) {
 }
 
 // ─── Component ─────────────────────────────────────────────────────────────
-export default function PasswordSimulation() {
+export default function PasswordStrengthSimulation({ attemptId, onComplete }) {
   const [lang, setLang]     = useState("en");
   const [pwd, setPwd]       = useState("");
   const [show, setShow]     = useState(false);
   const [result, setResult] = useState(null);
+  const [done, setDone]     = useState(false);
   const timer               = useRef(null);
+  const startTime           = useRef(Date.now());
   const t                   = T[lang];
 
   useEffect(() => {
@@ -377,6 +379,23 @@ export default function PasswordSimulation() {
   useEffect(() => {
     if (pwd) setResult(analyzePassword(pwd, lang));
   }, [lang]);
+
+  function handleFinish() {
+    setDone(true);
+    const timeTaken = Math.round((Date.now() - startTime.current) / 1000);
+    if (onComplete) {
+      onComplete({
+        answers: {
+          finalPassword:   pwd,
+          strengthScore:   result?.score ?? 0,
+          strengthLevel:   result?.level ?? "Very Weak",
+          checksCompleted: result?.checks ?? {},
+        },
+        score:     result?.score ?? 0,
+        timeTaken,
+      });
+    }
+  }
 
   const checkKeys = ["length8","length12","uppercase","lowercase","numbers","special","noCommon"];
 
@@ -478,6 +497,31 @@ export default function PasswordSimulation() {
                 <div key={i} className="ps-tip-item">{tip}</div>
               ))}
             </div>
+
+            {/* ── Finish button ── */}
+            {!done ? (
+              <button
+                className="ps-finish-btn"
+                onClick={handleFinish}
+                style={{
+                  marginTop: 24, width: "100%", padding: "14px",
+                  background: "#22c55e", color: "#fff", border: "none",
+                  borderRadius: "var(--radius-md)", fontFamily: "inherit",
+                  fontSize: 15, fontWeight: 800, cursor: "pointer",
+                  transition: "all 0.2s",
+                }}
+              >
+                {lang === "np" ? "✅ सिमुलेसन सम्पन्न गर्नुहोस्" : "✅ Mark as Complete"}
+              </button>
+            ) : (
+              <div style={{
+                marginTop: 24, textAlign: "center", padding: "14px",
+                background: "var(--green-light)", border: "1.5px solid #86efac",
+                borderRadius: "var(--radius-md)", color: "#166534", fontWeight: 700,
+              }}>
+                {lang === "np" ? "🎉 सम्पन्न! प्रगति सुरक्षित गरिँदैछ…" : "🎉 Complete! Saving your progress…"}
+              </div>
+            )}
           </>
         ) : (
           <div className="ps-empty">

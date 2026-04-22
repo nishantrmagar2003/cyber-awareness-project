@@ -209,7 +209,7 @@ function Timeline({ steps, onDone }) {
 }
 
 /* ── Main ─────────────────────────────────────────── */
-export default function OTPSocialEngineering() {
+export default function OTPSocialEngineeringSimulation({ attemptId, onComplete }) {
   const [lang, setLang]   = useState("en");
   const [phase, setPhase] = useState("setup");
   // phases: setup → chat → choice → shared/refused → result
@@ -219,7 +219,9 @@ export default function OTPSocialEngineering() {
   const [choice, setChoice]       = useState(null); // "share" | "refuse"
   const [extraIdx, setExtraIdx]   = useState(0);
   const [timelineDone, setTimelineDone] = useState(false);
-  const chatRef = useRef(null);
+  const [done, setDone]           = useState(false);
+  const chatRef   = useRef(null);
+  const startTime = useRef(Date.now());
   const t = T[lang];
 
   // Auto-scroll chat
@@ -269,6 +271,23 @@ export default function OTPSocialEngineering() {
     setChoice(null);
     setExtraIdx(0);
     setTimelineDone(false);
+    setDone(false);
+    startTime.current = Date.now();
+  }
+
+  function handleFinish(outcome) {
+    setDone(true);
+    const timeTaken = Math.round((Date.now() - startTime.current) / 1000);
+    if (onComplete) {
+      onComplete({
+        answers: {
+          choice: outcome === "safe" ? "refuse" : "share",
+          outcome,
+        },
+        score:     outcome === "safe" ? 100 : 0,
+        timeTaken,
+      });
+    }
   }
 
   // Re-drive chat on lang change
@@ -411,6 +430,15 @@ export default function OTPSocialEngineering() {
                   {t.tryAgainBtn}
                 </button>
                 <button className="otp-back-btn" onClick={reset}>{t.resetBtn}</button>
+                {!done ? (
+                  <button className="otp-action-btn btn-green" style={{ marginTop: 10 }} onClick={() => handleFinish("taken")}>
+                    {lang === "np" ? "✅ सिमुलेसन सम्पन्न गर्नुहोस्" : "✅ Finish Simulation"}
+                  </button>
+                ) : (
+                  <div className="otp-lesson-box lesson-success" style={{ marginTop: 10, textAlign: "center" }}>
+                    {lang === "np" ? "🎉 प्रगति सुरक्षित गरिँदैछ…" : "🎉 Saving your progress…"}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -436,6 +464,15 @@ export default function OTPSocialEngineering() {
                   ))}
                 </div>
                 <button className="otp-action-btn btn-green" onClick={reset}>{t.resetBtn}</button>
+                {!done ? (
+                  <button className="otp-action-btn btn-green" style={{ marginTop: 10 }} onClick={() => handleFinish("safe")}>
+                    {lang === "np" ? "✅ सिमुलेसन सम्पन्न गर्नुहोस्" : "✅ Finish Simulation"}
+                  </button>
+                ) : (
+                  <div className="otp-lesson-box lesson-success" style={{ marginTop: 10, textAlign: "center" }}>
+                    {lang === "np" ? "🎉 प्रगति सुरक्षित गरिँदैछ…" : "🎉 Saving your progress…"}
+                  </div>
+                )}
               </div>
             )}
           </div>

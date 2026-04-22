@@ -26,30 +26,30 @@ import EmployeePhishingTest from "./workplace-security/EmployeePhishingTest";
 import USBDropAttack from "./workplace-security/USBDropAttack";
 
 export const simulationRegistry = {
-    1: PasswordStrengthSimulation,
-    2: PasswordReuseSimulation,
-  
-    3: TwoFASimulation,
-    4: OTPSocialEngineeringSimulation,
-  
-    5: OversharingRiskAnalyzerSimulation,
-    6: PrivacySettingsChallengeSimulation,
-  
-    7: PhishingEmailGame,
-    8: FakeLoginTrap,
-  
-    9: QRScamAwareness,
-    10: QRPaymentTrick,
-  
-    11: DomainInspectionChallenge,
-    12: FakeAppStoreListing,
-  
-    13: AppPermissionControl,
-    14: PublicWiFiAttack,
-  
-    15: CyberbullyingResponse,
-    16: BystanderDecision,
-  
-    17: EmployeePhishingTest,
-    18: USBDropAttack,
-  };
+  "password-reuse": PasswordReuseSimulation,
+  "password-strength": PasswordStrengthSimulation,
+
+  "otp-social-engineering": OTPSocialEngineeringSimulation,
+  "two-fa": TwoFASimulation,
+
+  "oversharing-risk-analyzer": OversharingRiskAnalyzerSimulation,
+  "privacy-settings-challenge": PrivacySettingsChallengeSimulation,
+
+  "fake-login-trap": FakeLoginTrap,
+  "phishing-email-game": PhishingEmailGame,
+
+  "qr-payment-trick": QRPaymentTrick,
+  "qr-scam-awareness": QRScamAwareness,
+
+  "domain-inspection-challenge": DomainInspectionChallenge,
+  "fake-app-store-listing": FakeAppStoreListing,
+
+  "app-permission-control": AppPermissionControl,
+  "public-wifi-attack": PublicWiFiAttack,
+
+  "bystander-decision": BystanderDecision,
+  "cyberbullying-response": CyberbullyingResponse,
+
+  "employee-phishing-test": EmployeePhishingTest,
+  "usb-drop-attack": USBDropAttack,
+};

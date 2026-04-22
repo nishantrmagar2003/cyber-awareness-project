@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 /* ── Translations ─────────────────────────────────── */
 const T = {
@@ -322,12 +322,14 @@ function FinishScreen({ t, onRetry }) {
 }
 
 /* ── Main ─────────────────────────────────────────── */
-export default function QRScamAwareness() {
+export default function QRScamAwareness({ attemptId, onComplete }) {
   const [lang, setLang]         = useState("en");
   const [phase, setPhase]       = useState("intro");   // intro | game | results
   const [idx, setIdx]           = useState(0);
   const [scores, setScores]     = useState([]);
   const [finished, setFinished] = useState(false);
+  const [simDone, setSimDone]   = useState(false);
+  const startTime               = useRef(Date.now());
   const t = T[lang];
 
   function start() { setIdx(0); setScores([]); setFinished(false); setPhase("game"); }
@@ -466,7 +468,7 @@ export default function QRScamAwareness() {
 
             <div className="qr-btn-group">
               <button className="qr-start-btn qr-outline-btn" onClick={start}>{t.retryBtn}</button>
-              <button className="qr-start-btn" onClick={() => setFinished(true)}>{t.finishBtn}</button>
+              <button className="qr-start-btn" onClick={() => handleFinish()}>{t.finishBtn}</button>
             </div>
 
             {finished && <FinishScreen t={t} onRetry={() => resetAll()} />}

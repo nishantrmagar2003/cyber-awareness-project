@@ -1,144 +1,524 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap');
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --navy: #0f2158;
-  --blue-dark: #1e3a8a;
-  --blue: #2563eb;
-  --blue-mid: #3b82f6;
-  --blue-pale: #dbeafe;
-
-  --white: #ffffff;
-  --off-white: #f4f7ff;
-
-  --card-white: #ffffff;
-  --card-tint: #eef3ff;
-
-  --gray-bg: #f8fafc;
-  --gray-border: #d1d5db;
-  --gray-text: #6b7280;
-
-  --text-dark: #111827;
-  --text-body: #374151;
-  --text-muted: #6b7280;
-
-  --border: #e2e8f0;
-  --toggle-bg: #e5e7eb;
-
-  --success: #16a34a;
-  --green-bg: #dcfce7;
-
-  --amber: #d97706;
-  --amber-bg: #fef3c7;
-
-  --rose: #dc2626;
-  --rose-bg: #fee2e2;
-
-  --indigo: #4f46e5;
-  --indigo-bg: #e0e7ff;
-
-  --sky: #0284c7;
-  --sky-bg: #e0f2fe;
-}
-
-html, body { height: 100%; }
-
-body {
-  font-family: 'Noto Sans Devanagari', sans-serif;
-  color: var(--text-dark);
-  background: var(--off-white);
-}
-
-/* PAGE */
-
-.sim-page { padding: 28px 28px 56px; }
-
-.sim-page__header {
+.sas-page {
+  min-height: 100vh;
+  padding: 24px;
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 22px;
+  background:
+    radial-gradient(circle at top right, rgba(79, 70, 229, 0.10), transparent 20%),
+    radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.08), transparent 16%),
+    linear-gradient(180deg, #f8fbff 0%, #f2f6fb 45%, #edf3f9 100%);
+  animation: sasPageFade 0.45s ease;
+}
+
+.sas-alert {
+  border-radius: 16px;
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.6;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+}
+
+.sas-alert--error {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  color: #be123c;
+}
+
+.sas-alert--success {
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+}
+
+.sas-loading-text,
+.sas-empty-text {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.sas-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.sas-summary-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  padding: 22px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  box-shadow:
+    0 16px 34px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  transition: transform 0.26s ease, box-shadow 0.26s ease;
+}
+
+.sas-summary-card:hover {
+  transform: translateY(-5px);
+  box-shadow:
+    0 24px 42px rgba(15, 23, 42, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+.sas-summary-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 4px;
+}
+
+.sas-summary-card--blue::before {
+  background: linear-gradient(90deg, #2563eb, #60a5fa);
+}
+
+.sas-summary-card--green::before {
+  background: linear-gradient(90deg, #16a34a, #4ade80);
+}
+
+.sas-summary-card--amber::before {
+  background: linear-gradient(90deg, #d97706, #f59e0b);
+}
+
+.sas-summary-card--indigo::before {
+  background: linear-gradient(90deg, #4f46e5, #818cf8);
+}
+
+.sas-summary-card__label {
+  margin: 0;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.sas-summary-card__value {
+  margin: 14px 0 8px;
+  color: #0f172a;
+  font-size: 34px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.sas-summary-card__note {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.sas-toolbar-card,
+.sas-section-card,
+.sas-module-block {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  border-radius: 28px;
+  box-shadow:
+    0 16px 36px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  padding: 24px;
+}
+
+.sas-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(240px, 280px) auto;
   gap: 16px;
-  margin-bottom: 28px;
+  align-items: end;
+}
+
+.sas-toolbar__search,
+.sas-toolbar__filter {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sas-toolbar__actions {
+  display: flex;
+  align-items: end;
+  justify-content: flex-end;
+}
+
+.sas-toolbar__label,
+.sas-field-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.sas-toolbar__input,
+.sas-toolbar__select,
+.sas-field-input {
+  width: 100%;
+  border: 1px solid #dbe3ee;
+  background: white;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: #334155;
+  outline: none;
+  transition: border-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.sas-toolbar__input:focus,
+.sas-toolbar__select:focus,
+.sas-field-input:focus {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.14);
+}
+
+.sas-primary-btn {
+  border: none;
+  border-radius: 14px;
+  padding: 12px 18px;
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
+  box-shadow: 0 12px 24px rgba(79, 70, 229, 0.20);
+}
+
+.sas-primary-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.02);
+}
+
+.sas-primary-btn--disabled {
+  background: #a5b4fc;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.sas-secondary-btn {
+  border: 1px solid #dbe3ee;
+  background: white;
+  color: #475569;
+  border-radius: 14px;
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.22s ease;
+}
+
+.sas-secondary-btn:hover {
+  background: #f8fafc;
+  color: #0f172a;
+  transform: translateY(-1px);
+}
+
+.sas-list-wrap,
+.sas-simulation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.sas-module-block__title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
-.sim-page__title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--blue-dark);
-  line-height: 1.25;
+.sas-module-block__title {
   margin: 0;
-  display: inline-block;
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
 }
 
-.sim-page__title::after {
-  content: '';
-  display: block;
-  width: 48px;
-  height: 4px;
-  background: var(--blue-mid);
-  border-radius: 4px;
-  margin-top: 10px;
+.sas-module-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  background: #eef2ff;
+  color: #4338ca;
+  border: 1px solid #c7d2fe;
 }
 
-.sim-page__subtitle {
-  font-size: 0.9375rem;
-  color: var(--gray-text);
-  margin-top: 6px;
+.sas-module-level {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #e2e8f0;
 }
 
-/* CARD */
-
-.sim-card {
-  background: linear-gradient(160deg, var(--card-white), var(--card-tint));
-  border-radius: 16px;
-  padding: 28px;
-
-  border: 1px solid var(--border);
-
-  box-shadow:
-    0 4px 6px rgba(0,0,0,0.04),
-    0 12px 30px rgba(15,33,88,0.08);
-
-  transition: transform .28s ease, box-shadow .28s ease;
-
-  margin-bottom: 24px;
+.sas-module-block__description {
+  margin: 10px 0 0;
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.8;
 }
 
-.sim-card:hover {
-  transform: translateY(-4px);
-  box-shadow:
-    0 8px 12px rgba(0,0,0,0.06),
-    0 24px 48px rgba(37,99,235,0.12);
+.sas-module-block__meta {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: #94a3b8;
 }
 
-/* SEARCH */
+.sas-empty-box {
+  border: 1px dashed #cbd5e1;
+  background: #f8fafc;
+  border-radius: 18px;
+  padding: 18px;
+}
 
-.sim-search-wrap { margin-bottom: 22px; }
+.sas-empty-box__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #334155;
+}
 
-.sim-search__input {
+.sas-empty-box__text {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.sas-simulation-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  transition: transform 0.24s ease, box-shadow 0.24s ease;
+}
+
+.sas-simulation-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 28px rgba(15, 23, 42, 0.08);
+}
+
+.sas-simulation-card__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sas-simulation-card__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.sas-simulation-card__header {
+  margin-bottom: 10px;
+}
+
+.sas-simulation-card__title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sas-simulation-order {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4338ca;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.sas-simulation-card__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.sas-simulation-card__description {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #475569;
+}
+
+.sas-simulation-card__meta {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.sas-simulation-card__actions {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.sas-action-btn {
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  background: white;
+}
+
+.sas-action-btn--edit {
+  color: #4338ca;
+  border-color: #c7d2fe;
+}
+
+.sas-action-btn--edit:hover {
+  background: #eef2ff;
+}
+
+.sas-action-btn--delete {
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.sas-action-btn--delete:hover {
+  background: #fff1f2;
+}
+
+.sas-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(15, 23, 42, 0.38);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  backdrop-filter: blur(4px);
+}
+
+.sas-modal {
   width: 100%;
-  max-width: 340px;
-
-  padding: 10px 16px;
-
-  border: 1.5px solid var(--gray-border);
-  border-radius: 10px;
-
-  font-size: .9375rem;
-
-  font-family: 'Noto Sans Devanagari', sans-serif;
-
-  background: var(--white);
-  color: var(--text-dark);
-
-  outline: none;
-
-  transition: border-color .2s, box-shadow .2s;
+  max-width: 860px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: white;
+  border-radius: 24px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 30px 60px rgba(15, 23, 42, 0.20);
+  padding: 24px;
+  animation: sasModalIn 0.22s ease;
 }
 
-.sim-search__input:focus {
-  border-color: var(--blue-mid);
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+.sas-modal__title {
+  margin: 0 0 18px;
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.sas-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sas-modal__actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 20px;
+}
+
+@keyframes sasPageFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sasModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 1200px) {
+  .sas-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sas-toolbar {
+    grid-template-columns: 1fr 240px;
+  }
+
+  .sas-toolbar__actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .sas-page {
+    padding: 16px;
+    gap: 18px;
+  }
+
+  .sas-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sas-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .sas-toolbar-card,
+  .sas-section-card,
+  .sas-module-block,
+  .sas-modal {
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .sas-simulation-card__top,
+  .sas-modal__actions {
+    flex-direction: column;
+  }
+
+  .sas-simulation-card__actions,
+  .sas-action-btn,
+  .sas-primary-btn,
+  .sas-secondary-btn {
+    width: 100%;
+  }
 }

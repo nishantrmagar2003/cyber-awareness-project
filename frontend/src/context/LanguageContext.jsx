@@ -1,15 +1,42 @@
-import { createContext, useState, useContext } from "react";
+import React, { createContext, useState, useContext } from "react";
 
-const LanguageContext = createContext();
+/* =========================
+   CONTEXT
+========================= */
+const LanguageContext = createContext(null);
 
+/* =========================
+   PROVIDER
+========================= */
 export const LanguageProvider = ({ children }) => {
-  const [language, setLanguage] = useState("en");
+  const [language, setLanguage] = useState(() => {
+    // 🔥 Persist language (optional upgrade)
+    return localStorage.getItem("lang") || "en";
+  });
+
+  const updateLanguage = (lang) => {
+    setLanguage(lang);
+    localStorage.setItem("lang", lang);
+  };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage }}>
+    <LanguageContext.Provider
+      value={{ language, setLanguage: updateLanguage }}
+    >
       {children}
     </LanguageContext.Provider>
   );
 };
 
-export const useLanguage = () => useContext(LanguageContext);
+/* =========================
+   HOOK
+========================= */
+export const useLanguage = () => {
+  const context = useContext(LanguageContext);
+
+  if (!context) {
+    throw new Error("useLanguage must be used within LanguageProvider");
+  }
+
+  return context;
+};

@@ -1,26 +1,31 @@
+import React from "react"; // ✅ REQUIRED
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../services/api"; // ✅ ADDED API IMPORT
+import api from "../../services/api";
 import "./RegisterPage.css";
 
 const content = {
   en: {
-    heading:  "Create Account",
-    tagline:  "Sign up to access your dashboard",
+    heading: "Create Account",
+    tagline: "Sign up to access your dashboard",
     ph: {
-      name:            "Full Name",
-      email:           "Email Address",
-      phone:           "Phone Number",
-      password:        "Create Password",
+      name: "Full Name",
+      email: "Email Address",
+      phone: "Phone Number",
+      password: "Create Password",
       confirmPassword: "Confirm Password",
     },
     createBtn: "Create Account",
-    loginLink: <>Already have an account? <strong>Sign In</strong></>,
+    loginLink: (
+      <>
+        Already have an account? <strong>Sign In</strong>
+      </>
+    ),
     errors: {
-      name:            "Full name is required.",
-      email:           "Please enter a valid email address.",
-      phone:           "Please enter a valid phone number.",
-      password:        "Password must be at least 6 characters.",
+      name: "Full name is required.",
+      email: "Please enter a valid email address.",
+      phone: "Please enter a valid phone number.",
+      password: "Password must be at least 6 characters.",
       confirmPassword: "Passwords do not match.",
     },
     strengthLabel: ["", "Weak", "Fair", "Good", "Strong"],
@@ -28,22 +33,26 @@ const content = {
     success: "Account created! Redirecting to login...",
   },
   np: {
-    heading:  "खाता सिर्जना गर्नुहोस्",
-    tagline:  "ड्यासबोर्ड पहुँचका लागि साइन अप गर्नुहोस्",
+    heading: "खाता सिर्जना गर्नुहोस्",
+    tagline: "ड्यासबोर्ड पहुँचका लागि साइन अप गर्नुहोस्",
     ph: {
-      name:            "तपाईंको पूरा नाम",
-      email:           "इमेल ठेगाना",
-      phone:           "फोन नम्बर",
-      password:        "पासवर्ड बनाउनुहोस्",
+      name: "तपाईंको पूरा नाम",
+      email: "इमेल ठेगाना",
+      phone: "फोन नम्बर",
+      password: "पासवर्ड बनाउनुहोस्",
       confirmPassword: "पासवर्ड फेरी लेख्नुहोस्",
     },
     createBtn: "खाता सिर्जना गर्नुहोस्",
-    loginLink: <>पहिले नै खाता छ? <strong>साइन इन गर्नुहोस्</strong></>,
+    loginLink: (
+      <>
+        पहिले नै खाता छ? <strong>साइन इन गर्नुहोस्</strong>
+      </>
+    ),
     errors: {
-      name:            "पूरा नाम आवश्यक छ।",
-      email:           "कृपया मान्य इमेल ठेगाना लेख्नुहोस्।",
-      phone:           "कृपया मान्य फोन नम्बर लेख्नुहोस्।",
-      password:        "पासवर्ड कम्तिमा ६ अक्षरको हुनुपर्छ।",
+      name: "पूरा नाम आवश्यक छ।",
+      email: "कृपया मान्य इमेल ठेगाना लेख्नुहोस्।",
+      phone: "कृपया मान्य फोन नम्बर लेख्नुहोस्।",
+      password: "पासवर्ड कम्तिमा ६ अक्षरको हुनुपर्छ।",
       confirmPassword: "पासवर्ड मिलेन।",
     },
     strengthLabel: ["", "कमजोर", "ठीकठाक", "राम्रो", "बलियो"],
@@ -68,10 +77,15 @@ export default function RegisterPage() {
   const t = content[lang];
 
   const [form, setForm] = useState({
-    name: "", email: "", phone: "", password: "", confirmPassword: "",
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
   });
 
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
   const strength = getStrength(form.password);
 
   const handleChange = (e) => {
@@ -79,13 +93,13 @@ export default function RegisterPage() {
 
     setForm((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
 
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
-        [name]: ""
+        [name]: "",
       }));
     }
   };
@@ -95,22 +109,25 @@ export default function RegisterPage() {
 
     if (!form.name.trim()) errs.name = t.errors.name;
 
-    if (!form.email || !/\S+@\S+\.\S+/.test(form.email))
+    if (!form.email || !/\S+@\S+\.\S+/.test(form.email)) {
       errs.email = t.errors.email;
+    }
 
-    if (!form.phone || form.phone.trim().length < 7)
+    if (!form.phone || form.phone.trim().length < 7) {
       errs.phone = t.errors.phone;
+    }
 
-    if (!form.password || form.password.length < 6)
+    if (!form.password || form.password.length < 6) {
       errs.password = t.errors.password;
+    }
 
-    if (form.password !== form.confirmPassword)
+    if (form.password !== form.confirmPassword) {
       errs.confirmPassword = t.errors.confirmPassword;
+    }
 
     return errs;
   };
 
-  // ✅ UPDATED SUBMIT FUNCTION
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -122,29 +139,27 @@ export default function RegisterPage() {
     }
 
     setErrors({});
+    setLoading(true);
 
     try {
-
       const response = await api.post("/auth/register", {
         full_name: form.name,
         email: form.email,
         phone: form.phone,
-        password: form.password
+        password: form.password,
       });
 
       alert(response.data.message || t.success);
-
       navigate("/login");
-
     } catch (err) {
-
       const message =
         err.response?.data?.error ||
         err.response?.data?.message ||
         "Registration failed";
 
       alert(message);
-
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -171,6 +186,7 @@ export default function RegisterPage() {
         {/* Language Toggle */}
         <div className="language-toggle">
           <button
+            type="button"
             className={lang === "en" ? "active" : ""}
             onClick={() => setLang("en")}
           >
@@ -178,6 +194,7 @@ export default function RegisterPage() {
           </button>
 
           <button
+            type="button"
             className={lang === "np" ? "active" : ""}
             onClick={() => setLang("np")}
           >
@@ -188,12 +205,9 @@ export default function RegisterPage() {
         <h2 className="create-heading">{t.heading}</h2>
         <p className="create-tagline">{t.tagline}</p>
 
-        {firstError && (
-          <div className="error-banner">{firstError}</div>
-        )}
+        {firstError && <div className="error-banner">{firstError}</div>}
 
         <form className="register-form" onSubmit={handleSubmit} noValidate>
-
           {fields.map(({ name, type, showStrength }) => (
             <div className="field-wrap" key={name}>
               <input
@@ -233,16 +247,12 @@ export default function RegisterPage() {
             </div>
           ))}
 
-          <button type="submit" className="create-btn">
-            {t.createBtn}
+          <button type="submit" className="create-btn" disabled={loading}>
+            {loading ? "..." : t.createBtn}
           </button>
-
         </form>
 
-        <div
-          className="login-link"
-          onClick={() => navigate("/login")}
-        >
+        <div className="login-link" onClick={() => navigate("/login")}>
           {t.loginLink}
         </div>
 

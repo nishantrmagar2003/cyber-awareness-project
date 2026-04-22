@@ -1,25 +1,39 @@
+import React from "react";
 import { Outlet, useLocation } from "react-router-dom";
 
 import SuperAdminSidebar from "../components/common/SuperAdminSidebar";
 import "../styles/superadmin.css";
 import TopNavbar from "../components/common/TopNavbar";
 
-const PAGE_TITLES = {
-  "/superadmin/dashboard": "Dashboard",
-  "/superadmin/organizations": "Organizations",
-  "/superadmin/users": "Users Management",
-  "/superadmin/modules": "Modules Management",
-  "/superadmin/topics": "Topics Management",
-  "/superadmin/videos": "Videos Management",
-  "/superadmin/quizzes": "Quizzes Management",
-  "/superadmin/simulations": "Simulations Management",
-  "/superadmin/badges": "Badges Management",
-  "/superadmin/settings": "System Settings",
-};
-
 export default function SuperAdminLayout() {
   const location = useLocation();
-  const pageTitle = PAGE_TITLES[location.pathname] || "Dashboard";
+  const pathname = location.pathname;
+
+  let pageTitle = "Dashboard";
+
+  if (pathname === "/superadmin/dashboard") {
+    pageTitle = "Dashboard";
+  } else if (pathname === "/superadmin/organizations") {
+    pageTitle = "Organizations";
+  } else if (pathname.startsWith("/superadmin/organizations/")) {
+    pageTitle = "Organization Details";
+  } else if (pathname === "/superadmin/users") {
+    pageTitle = "Users Management";
+  } else if (pathname === "/superadmin/modules") {
+    pageTitle = "Modules Management";
+  } else if (pathname === "/superadmin/topics") {
+    pageTitle = "Topics Management";
+  } else if (pathname === "/superadmin/videos") {
+    pageTitle = "Videos Management";
+  } else if (pathname === "/superadmin/quizzes") {
+    pageTitle = "Quizzes Management";
+  } else if (pathname === "/superadmin/simulations") {
+    pageTitle = "Simulations Management";
+  } else if (pathname === "/superadmin/badges") {
+    pageTitle = "Badges Management";
+  } else if (pathname === "/superadmin/settings") {
+    pageTitle = "System Settings";
+  }
 
   return (
     <div className="sa-root">

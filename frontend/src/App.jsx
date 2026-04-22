@@ -1,8 +1,8 @@
+import React from "react";
 import { useState } from "react";
 import AppRoutes from "./routes/AppRoutes";
 import SuperAdminLayout from "./layouts/SuperAdminLayout";
 import OrgLayout from "./layouts/OrgLayout";
-import LanguageToggle from "./components/common/LanguageToggle";
 
 export default function App() {
   const [previewRole, setPreviewRole] = useState(null);
@@ -21,10 +21,5 @@ export default function App() {
     );
   }
 
-  return (
-    <>
-      <LanguageToggle />
-      <AppRoutes />
-    </>
-  );
+  return <AppRoutes />;
 }

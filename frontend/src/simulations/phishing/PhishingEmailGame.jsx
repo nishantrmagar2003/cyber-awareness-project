@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 const T = {
   en: {
@@ -285,20 +285,40 @@ function ScoreCircle({ correct, total }) {
   );
 }
 
-export default function PhishingEmailGame() {
+export default function PhishingEmailGame({ attemptId, onComplete }) {
   const [lang, setLang]     = useState("en");
   const [phase, setPhase]   = useState("intro");
   const [idx, setIdx]       = useState(0);
   const [scores, setScores] = useState([]);
+  const [done, setDone]     = useState(false);
+  const startTime           = useRef(Date.now());
   const t = T[lang];
 
-  function start() { setIdx(0); setScores([]); setPhase("game"); }
+  function start() { setIdx(0); setScores([]); setPhase("game"); startTime.current = Date.now(); }
 
   function handleChoice(correct) {
     const next = [...scores, correct];
     setScores(next);
     if (idx + 1 >= t.emails.length) setTimeout(() => setPhase("results"), 200);
     else setIdx(i => i + 1);
+  }
+
+  function handleFinish() {
+    setDone(true);
+    const timeTaken = Math.round((Date.now() - startTime.current) / 1000);
+    const correctCount = scores.filter(Boolean).length;
+    if (onComplete) {
+      onComplete({
+        answers: {
+          correctCount,
+          total:    t.emails.length,
+          accuracy: Math.round((correctCount / t.emails.length) * 100),
+          scores,
+        },
+        score:     Math.round((correctCount / t.emails.length) * 100),
+        timeTaken,
+      });
+    }
   }
 
   const correctCount = scores.filter(Boolean).length;
@@ -398,6 +418,23 @@ export default function PhishingEmailGame() {
               ))}
             </div>
             <button className="pe-start-btn" onClick={start}>{t.retryBtn}</button>
+            {!done ? (
+              <button
+                className="pe-start-btn"
+                style={{ marginTop: 12, background: "#22c55e" }}
+                onClick={handleFinish}
+              >
+                {lang === "np" ? "✅ सिमुलेसन सम्पन्न गर्नुहोस्" : "✅ Finish Simulation"}
+              </button>
+            ) : (
+              <div style={{
+                marginTop: 12, padding: "13px", textAlign: "center",
+                background: "#f0fdf4", border: "1.5px solid #86efac",
+                borderRadius: 10, color: "#166534", fontWeight: 700,
+              }}>
+                {lang === "np" ? "🎉 प्रगति सुरक्षित गरिँदैछ…" : "🎉 Saving your progress…"}
+              </div>
+            )}
           </div>
         )}
       </div>

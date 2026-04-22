@@ -17,11 +17,39 @@ router.post(
   moduleController.createModule
 );
 
-// Get all modules
+// Topic progress/dashboard route must stay before /:id
+router.get(
+  "/progress",
+  verifyToken,
+  moduleController.getTopicProgress
+);
+
+// Get all modules (old mixed endpoint - keep for now)
 router.get(
   "/",
   verifyToken,
   moduleController.getModules
+);
+
+// Get general modules
+router.get(
+  "/general",
+  verifyToken,
+  moduleController.getGeneralModules
+);
+
+// Get premium modules
+router.get(
+  "/premium",
+  verifyToken,
+  moduleController.getPremiumModules
+);
+// Submit general module pre-assessment and unlock module
+router.post(
+  "/:moduleId/pre-assessment",
+  verifyToken,
+  requireRole("general_user", "org_student"),
+  moduleController.submitModulePreAssessment
 );
 
 // Get single module
@@ -45,17 +73,6 @@ router.delete(
   verifyToken,
   requireRole("superadmin"),
   moduleController.deleteModule
-);
-
-/* =========================
-   NEW ROUTE FOR DASHBOARD
-========================= */
-
-// Topic progress (used by dashboard)
-router.get(
-  "/progress",
-  verifyToken,
-  moduleController.getTopicProgress
 );
 
 module.exports = router;
